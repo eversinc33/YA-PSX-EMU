@@ -63,8 +63,14 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b100101:
                     this->OP_OR(instruction);
                     break;
+                case 0b101011:
+                    this->OP_SLTU(instruction);
+                    break;
+                case 0b100001:
+                    this->OP_ADDU(instruction);
+                    break;
                 default:
-                    std::cout << "Unhandled instruction" << std::endl;
+                    std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     throw std::exception();
             }
         case 0b001001:
@@ -220,6 +226,18 @@ void Cpu::OP_ADDI(const Instruction& instruction) {
     this->setRegister(t, value);
 }
 
+// add unsigned
+// add two registers and store in d
+void Cpu::OP_ADDU(const Instruction &instruction) {
+    auto t = instruction.t();
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    auto value = this->getRegister(s) + this->getRegister(t);
+    this->setRegister(d, value);
+}
+
+
 // jump
 // set PC (instruction pointer) to address in immediate
 void Cpu::OP_J(const Instruction& instruction) {
@@ -238,6 +256,17 @@ void Cpu::OP_OR(const Instruction &instruction) {
     auto d = instruction.d();
 
     auto value = this->getRegister(s) | this->getRegister(t);
+    this->setRegister(d, value);
+}
+
+// set on less than unsigned
+// set rd to 0 1 depending on wheter rs is less than rt
+void Cpu::OP_SLTU(const Instruction& instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    auto value = (uint32_t) (this->getRegister(s) < this->getRegister(t));
     this->setRegister(d, value);
 }
 
@@ -281,9 +310,24 @@ void Cpu::OP_MTC0(const Instruction& instruction) {
     auto value = this->getRegister(cpu_r);
 
     switch (cop_r) {
+        case 3:
+        case 5:
+        case 6:
+        case 7:
+        case 9:
+        case 11: // breakpoint registers
+            if (value != 0) {
+                std::cout << "Unhandled_write_to_cop0_register:_" << std::dec << cop_r << std::endl;
+                throw std::exception();
+            }
         case 12: // status register
             this->sr = value;
             break;
+        case 13: // cause register, for exceptions
+            if (value != 0) {
+                std::cout << "Unhandled_write_to_CAUSE_register:_" << std::dec << value << std::endl;
+                throw std::exception();
+            }
         default:
             std::cout << "STUB:Unhandled_cop0_register:_" << std::dec << cop_r << std::endl;
     }

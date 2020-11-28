@@ -53,9 +53,11 @@ private:
     void OP_SLL(const Instruction &instruction);
     void OP_ADDIU(const Instruction &instruction);
     void OP_ADDI(const Instruction &instruction);
+    void OP_ADDU(const Instruction &instruction);
     void OP_J(const Instruction &instruction);
     void OP_OR(const Instruction &instruction);
     void OP_BNE(const Instruction &instruction);
+    void OP_SLTU(const Instruction &instruction);
     // coprocessor opcodes
     void OP_COP0(const Instruction &instruction);
     void OP_MTC0(const Instruction &instruction);
@@ -77,6 +79,7 @@ private:
     unsigned int n_instructions = 0;
 
     void branch(uint32_t offset);
+
 };
 
 
