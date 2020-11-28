@@ -7,10 +7,10 @@
 
 // fetch the 32 bit little endian word at offset (offset = offset in bios memory range)
 uint32_t Bios::load32(const uint32_t& offset) const {
-    uint8_t b0 = this->data[offset + 0];
-    uint8_t b1 = this->data[offset + 1];
-    uint8_t b2 = this->data[offset + 2];
-    uint8_t b3 = this->data[offset + 3];
+    auto b0 = (uint32_t) this->data[offset + 0];
+    auto b1 = (uint32_t) this->data[offset + 1];
+    auto b2 = (uint32_t) this->data[offset + 2];
+    auto b3 = (uint32_t) this->data[offset + 3];
 
     return b0 | (b1 << 8u) | (b2 << 16u) | (b3 << 24u);
 }
