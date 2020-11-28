@@ -33,7 +33,7 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
 
     if (HARDWARE_REGISTERS.contains(address)) {
         uint32_t offset = (address - HARDWARE_REGISTERS.start);
-        switch(offset) {
+        switch (offset) {
             // at offsets 0 and 4, the base address of the expansion 1 and 2 register maps are stored, these should never change
             case 0:
                 if (value != 0x1f000000) {
@@ -46,8 +46,10 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
                     throw std::exception();
                 }
             default:
-                std::cout << "Unhandled_write_to_MEMCONTROL_register:0x" << std::hex << value << std::endl;
+                std::cout << "STUB:Unhandled_write_to_MEMCONTROL_register:0x" << std::hex << value << std::endl;
         }
+    } else if (RAM_SIZE_REGISTER.contains(address)) {
+        std::cout << "STUB:Unhandled_write_to_RAM_SIZE_register:0x" << std::hex << value << std::endl;
     } else {
         std::cout << "No storage peripheral for address " << address << std::endl;
         throw std::exception();

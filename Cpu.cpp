@@ -12,10 +12,10 @@ void Cpu::runNextInstruction() {
     uint32_t instruction = this->load32(this->pc);
 
     this->n_instructions++;
-    std::cout << std::endl << "Instruction " << n_instructions << std::endl;
+    std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
     std::cout << "$8: " << std::hex << this->getRegister(8) << std::endl;
-    std::cout << "$PC: " << std::hex << this->pc << std::endl;
-    std::cout << "Next instruction: " << std::hex << instruction << " | " << std::bitset<8>(Instruction(instruction).function()) << std::endl;
+    std::cout << "$PC: " << this->pc << std::endl;
+    std::cout << "Next instruction: " << instruction << " | " << std::bitset<8>(Instruction(instruction).function()) << std::endl;
 
     this->decodeAndExecute(instruction);
 
