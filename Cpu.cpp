@@ -10,6 +10,11 @@
 
 void Cpu::runNextInstruction() {
 
+    if (this->pc % 4 != 0) {
+        std::cout << "pc_not_aligned_with_32bit!" << std::endl;
+        throw std::exception();
+    }
+
     // emulate branch delay slot
     // -> execute pending loads, if there is none, load $zero which is NOP
     this->setRegister(this->load.index, this->load.value);
@@ -64,6 +69,7 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             this->OP_SW(instruction);
             break;
         case 0b000000:
+            std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
             switch (instruction.subfunction()) {
                 case 0b000000:
                     this->OP_SLL(instruction);
@@ -128,9 +134,11 @@ uint32_t Cpu::getRegister(const uint32_t &t) {
 }
 
 void Cpu::setRegister(const uint32_t &t, const uint32_t &v) {
+    if (t == 0) {
+        return; // r0 is always zero // this->out_regs[0] = 0;
+    }
     std::cout << "Loading (in big endian) " << std::dec << v << " into register " << t << std::endl;
     this->out_regs[t] = v;
-    this->out_regs[0] = 0;
 }
 
 // load upper immediate opcode:
@@ -236,7 +244,7 @@ void Cpu::OP_ADDIU(const Instruction& instruction) {
     auto t = instruction.t();
     auto s = instruction.s();
 
-    auto value = this->getRegister(s) + immediate;
+    auto value = this->getRegister(s) + immediate; // TODO: BUG?
     this->setRegister(t, value);
 }
 
@@ -420,5 +428,7 @@ void Cpu::OP_SB(const Instruction &instruction) {
 // set PC to value stored in a register
 void Cpu::OP_JR(const Instruction &instruction) {
     auto s = instruction.s();
+    std::cout << "jumping to addr in reg " << std::dec << s << std::endl;
+    std::cout << "new PC: " << std::dec << this->getRegister(s) << std::endl;
     this->pc = this->getRegister(s);
 }
