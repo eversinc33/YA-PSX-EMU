@@ -28,6 +28,24 @@ uint32_t Interconnect::load32(uint32_t address) {
     throw std::exception();
 }
 
+
+void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
+    if (address % 2 != 0) {
+        std::cout << "unaligned_store16_address_" << std::hex << address << std::endl;
+        throw std::exception();
+    }
+
+    auto absAddr = this->maskRegion(address);
+
+    if (SPU.contains(absAddr)) {
+        std::cout << "STUB:Unhandled_write_to_SPU_register:0x" << std::hex << value << std::endl;
+        return;
+    }
+
+    std::cout << "unhandled_store16_address_" << std::hex << address << std::endl;
+    throw std::exception();
+}
+
 void Interconnect::store32(uint32_t address, const uint32_t& value) {
     if (address % 4 != 0) {
         std::cout << "unaligned_store32_address_" << std::hex << address << std::endl;

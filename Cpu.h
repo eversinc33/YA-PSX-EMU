@@ -41,6 +41,7 @@ public:
     void runNextInstruction();
 
 private:
+    void store16(const uint32_t& address, const uint16_t & value) const;
     void store32(const uint32_t& address, const uint32_t& value) const;
     uint32_t load32(const uint32_t& address) const;
 
@@ -80,6 +81,11 @@ private:
 
     void branch(uint32_t offset);
 
+    void OP_SH(const Instruction &instruction);
+
+    void OP_JAL(const Instruction &instruction);
+
+    void OP_ANDI(const Instruction &instruction);
 };
 
 

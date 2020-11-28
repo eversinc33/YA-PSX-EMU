@@ -27,6 +27,7 @@ const uint32_t REGION_MASK[] = {
 const Range HARDWARE_REGISTERS = Range(0x1f801000, 36);
 const Range RAM_SIZE_REGISTER = Range(0x1f801060, 4); // register that does some ram configuration, set by the bios, should be save to ignore
 const Range CACHE_CONTROL = Range(0xfffe0130, 4);
+const Range SPU = Range(0x1f801c00, 640);
 
 class Interconnect {
 public:
@@ -40,6 +41,8 @@ public:
 
     uint32_t load32(uint32_t address);
     void store32(uint32_t address, const uint32_t& value);
+
+    void store16(const uint32_t &i, const uint16_t &i1);
 
 private:
     uint32_t maskRegion(const uint32_t& address);

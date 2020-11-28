@@ -37,6 +37,10 @@ uint32_t Cpu::load32(const uint32_t& address) const {
     return this->interconnect->load32(address);
 }
 
+void Cpu::store16(const uint32_t &address, const uint16_t &value) const {
+    this->interconnect->store16(address, value);
+}
+
 void Cpu::store32(const uint32_t &address, const uint32_t &value) const {
     this->interconnect->store32(address, value);
 }
@@ -88,6 +92,15 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b100011:
             this->OP_LW(instruction);
             break;
+        case 0b101001:
+            this->OP_SH(instruction);
+            break;
+        case 0b000011:
+            this->OP_JAL(instruction);
+            break;
+        case 0b001100:
+            this->OP_ANDI(instruction);
+            break;
         case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
@@ -121,7 +134,7 @@ void Cpu::OP_LUI(const Instruction& instruction) {
     this->setRegister(t, value);
 }
 
-// bitwise or opcode:
+// bitwise or immediate opcode:
 // bitwise or of value 'immediate' with source into target
 void Cpu::OP_ORI(const Instruction& instruction) {
     auto immediate = instruction.imm();
@@ -131,6 +144,25 @@ void Cpu::OP_ORI(const Instruction& instruction) {
     auto value = this->getRegister(s) | immediate;
 
     this->setRegister(t, value);
+}
+
+// store halfword
+void Cpu::OP_SH(const Instruction &instruction) {
+
+    if ((this->sr & 0x10000u) != 0u) {
+        // cache is isolated, ignore writing
+        std::cout << "STUB:ignoring_store_while_cache_is_isolated" << std::endl;
+        return;
+    }
+
+    auto immediate = instruction.imm_se(); // SW is sign extending
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto address = this->getRegister(s) + immediate;
+    auto value = this->getRegister(t);
+
+    this->store16(address, (uint16_t) value);
 }
 
 // store word opcode:
@@ -248,6 +280,17 @@ void Cpu::OP_J(const Instruction& instruction) {
     std::cout << "Jumping to: " << this->pc << std::endl;
 }
 
+// jump and link
+// jump and store return address in $ra ($31)
+void Cpu::OP_JAL(const Instruction &instruction) {
+    auto ra = this->pc;
+
+    // store return in ra
+    this->setRegister(31, ra);
+
+    this->OP_J(instruction);
+}
+
 // or
 // bitwise or
 void Cpu::OP_OR(const Instruction &instruction) {
@@ -287,6 +330,17 @@ void Cpu::OP_BNE(const Instruction &instruction) {
     if (this->getRegister(s) != this->getRegister(t)) {
         this->branch(immediate);
     }
+}
+
+// bitwise and immediate
+void Cpu::OP_ANDI(const Instruction &instruction) {
+    auto immediate = instruction.imm();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto value = this->getRegister(s) & immediate;
+
+    this->setRegister(t, value);
 }
 
 // coprocessor 0
