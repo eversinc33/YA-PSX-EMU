@@ -37,6 +37,10 @@ uint32_t Cpu::load32(const uint32_t& address) const {
     return this->interconnect->load32(address);
 }
 
+void Cpu::store8(const uint32_t &address, const uint8_t &value) const {
+    this->interconnect->store8(address, value);
+}
+
 void Cpu::store16(const uint32_t &address, const uint16_t &value) const {
     this->interconnect->store16(address, value);
 }
@@ -73,6 +77,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b100001:
                     this->OP_ADDU(instruction);
                     break;
+                case 0b001000:
+                    this->OP_JR(instruction);
+                    break;
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     throw std::exception();
@@ -100,6 +107,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             break;
         case 0b001100:
             this->OP_ANDI(instruction);
+            break;
+        case 0b101000:
+            this->OP_SB(instruction);
             break;
         case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
@@ -385,4 +395,30 @@ void Cpu::OP_MTC0(const Instruction& instruction) {
         default:
             std::cout << "STUB:Unhandled_cop0_register:_" << std::dec << cop_r << std::endl;
     }
+}
+
+// store byte
+void Cpu::OP_SB(const Instruction &instruction) {
+
+    if ((this->sr & 0x10000u) != 0u) {
+        // cache is isolated, ignore writing
+        std::cout << "STUB:ignoring_store_while_cache_is_isolated" << std::endl;
+        return;
+    }
+
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto address = this->getRegister(s) + immediate;
+    auto value = this->getRegister(t);
+
+    this->store8(address, (uint8_t) value);
+}
+
+// jump register
+// set PC to value stored in a register
+void Cpu::OP_JR(const Instruction &instruction) {
+    auto s = instruction.s();
+    this->pc = this->getRegister(s);
 }

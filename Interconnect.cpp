@@ -28,6 +28,18 @@ uint32_t Interconnect::load32(uint32_t address) {
     throw std::exception();
 }
 
+void Interconnect::store8(const uint32_t &address, const uint8_t &value) {
+    auto absAddr = this->maskRegion(address);
+
+    if (EXPANSION_2.contains(absAddr)) {
+        // register only for debugging
+        std::cout << "STUB:Unhandled_write_to_EXPANSION_2_register:0x" << std::hex << value << std::endl;
+        return;
+    }
+
+    std::cout << "unhandled_store8_address_" << std::hex << address << std::endl;
+    throw std::exception();
+}
 
 void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
     if (address % 2 != 0) {

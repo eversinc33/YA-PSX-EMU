@@ -41,6 +41,7 @@ public:
     void runNextInstruction();
 
 private:
+    void store8(const uint32_t &address, const uint8_t &value) const;
     void store16(const uint32_t& address, const uint16_t & value) const;
     void store32(const uint32_t& address, const uint32_t& value) const;
     uint32_t load32(const uint32_t& address) const;
@@ -59,6 +60,11 @@ private:
     void OP_OR(const Instruction &instruction);
     void OP_BNE(const Instruction &instruction);
     void OP_SLTU(const Instruction &instruction);
+    void OP_SH(const Instruction &instruction);
+    void OP_JAL(const Instruction &instruction);
+    void OP_ANDI(const Instruction &instruction);
+    void OP_SB(const Instruction &instruction);
+    void OP_JR(const Instruction &instruction);
     // coprocessor opcodes
     void OP_COP0(const Instruction &instruction);
     void OP_MTC0(const Instruction &instruction);
@@ -70,9 +76,8 @@ private:
     // custom registers
     uint32_t out_regs[32] = {}; // second set of registers to emulate the load delay slot accurately. contain output of the curren instruction
     LoadRegister load; // load initiated by the current instruction
-
+    // get and set
     uint32_t getRegister(const uint32_t& t);
-
     void setRegister(const uint32_t& t, const uint32_t& v);
 
     Instruction nextInstruction;
@@ -80,12 +85,6 @@ private:
     unsigned int n_instructions = 0;
 
     void branch(uint32_t offset);
-
-    void OP_SH(const Instruction &instruction);
-
-    void OP_JAL(const Instruction &instruction);
-
-    void OP_ANDI(const Instruction &instruction);
 };
 
 
