@@ -35,8 +35,13 @@ uint32_t Instruction::imm_se() const {
     return (uint32_t) v;
 }
 
+// immediate for jump instructions stored in bits 25:0
+uint32_t Instruction::imm_jump() const {
+    return this->opcode & 0x3ffffffu;
+}
+
 // return shift immediate value, which is stored in 10:6
-uint32_t Instruction::shift_imm() const {
+uint32_t Instruction::imm_shift() const {
     return (this->opcode >> 6u) & 0x1fu;
 }
 

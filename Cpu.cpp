@@ -8,19 +8,22 @@
 #include "Instruction.h"
 
 void Cpu::runNextInstruction() {
+    // emulate branch delay slot
+    Instruction instruction = nextInstruction;
+
     // Fetch instruction at PC (IP)
-    uint32_t instruction = this->load32(this->pc);
+    this->nextInstruction = Instruction(this->load32(this->pc));
 
     this->n_instructions++;
     std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
     std::cout << "$8: " << std::hex << this->getRegister(8) << std::endl;
     std::cout << "$PC: " << this->pc << std::endl;
-    std::cout << "Next instruction: " << instruction << " | " << std::bitset<8>(Instruction(instruction).function()) << std::endl;
-
-    this->decodeAndExecute(instruction);
+    std::cout << "Next instruction: " << std::hex << instruction.opcode << " | " << std::bitset<8>(instruction.function()) << std::endl;
 
     // Increment PC to point to the next instruction. (each is 32 bit)
     this->pc += 4;
+
+    this->decodeAndExecute(instruction);
 }
 
 uint32_t Cpu::load32(const uint32_t& address) const {
@@ -31,26 +34,37 @@ void Cpu::store32(const uint32_t &address, const uint32_t &value) const {
     this->interconnect->store32(address, value);
 }
 
-void Cpu::decodeAndExecute(const uint32_t &instruction) {
+void Cpu::decodeAndExecute(const Instruction& instruction) {
 
-    Instruction i = Instruction(instruction);
-    switch(i.function()) {
+    switch(instruction.function()) {
         // http://mipsconverter.com/opcodes.html
         // http://problemkaputt.de/psx-spx.htm#cpuspecifications
         case 0b001111:
-            this->OP_LUI(i);
+            this->OP_LUI(instruction);
             break;
         case 0b001101:
-            this->OP_ORI(i);
+            this->OP_ORI(instruction);
             break;
         case 0b101011:
-            this->OP_SW(i);
+            this->OP_SW(instruction);
             break;
         case 0b000000:
-            this->OP_SLL(i);
-            break;
+            switch (instruction.subfunction()) {
+                case 0b000000:
+                    this->OP_SLL(instruction);
+                    break;
+                case 0b100101:
+                    this->OP_OR(instruction);
+                    break;
+                default:
+                    std::cout << "Unhandled instruction" << std::endl;
+                    throw std::exception();
+            }
         case 0b001001:
-            this->OP_ADDIU(i);
+            this->OP_ADDIU(instruction);
+            break;
+        case 0b000010:
+            this->OP_J(instruction);
             break;
         default:
             std::cout << "Unhandled instruction" << std::endl;
@@ -93,7 +107,7 @@ void Cpu::OP_ORI(const Instruction& instruction) {
     this->setRegister(t, value);
 }
 
-// storw word opcode:
+// store word opcode:
 // store the word in target in source plus memory offset of immediate
 void Cpu::OP_SW(const Instruction& instruction) {
     auto immediate = instruction.imm_se(); // SW is sign extending
@@ -109,7 +123,7 @@ void Cpu::OP_SW(const Instruction& instruction) {
 // shift left logical
 // shift bits from target by immediate to the left and store in destination
 void Cpu::OP_SLL(const Instruction& instruction) {
-    auto immediate = instruction.shift_imm();
+    auto immediate = instruction.imm_shift();
     auto t = instruction.t();
     auto d = instruction.d();
 
@@ -127,4 +141,25 @@ void Cpu::OP_ADDIU(const Instruction& instruction) {
 
     auto value = this->getRegister(s) + immediate;
     this->setRegister(t, value);
+}
+
+// jump
+// set PC (instruction pointer) to address in immediate
+void Cpu::OP_J(const Instruction& instruction) {
+    auto immediate = instruction.imm_jump();
+
+    // immediate is shifted 2 to the right, because the two LSBs of pc are always zero anyway (due to the 32bit boundary)
+    this->pc = (this->pc & 0xf0000000u) | (immediate << 2u);
+    std::cout << "Jumping to: " << this->pc << std::endl;
+}
+
+// or
+// bitwise or
+void Cpu::OP_OR(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    auto value = this->getRegister(s) | this->getRegister(t);
+    this->setRegister(d, value);
 }

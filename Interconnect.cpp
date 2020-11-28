@@ -40,11 +40,13 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
                     std::cout << "Bad_expansion_1_base_address:0x" << std::hex << value << std::endl;
                     throw std::exception();
                 }
+                break;
             case 4:
                 if (value != 0x1f802000) {
                     std::cout << "Bad_expansion_2_base_address:0x" << std::hex << value << std::endl;
                     throw std::exception();
                 }
+                break;
             default:
                 std::cout << "STUB:Unhandled_write_to_MEMCONTROL_register:0x" << std::hex << value << std::endl;
         }
