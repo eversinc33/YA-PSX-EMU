@@ -128,7 +128,7 @@ uint32_t Cpu::getRegister(const uint32_t &t) {
 }
 
 void Cpu::setRegister(const uint32_t &t, const uint32_t &v) {
-    std::cout << "Loading (in big endian) " << v << " into register " << t << std::endl;
+    std::cout << "Loading (in big endian) " << std::dec << v << " into register " << t << std::endl;
     this->out_regs[t] = v;
     this->out_regs[0] = 0;
 }
