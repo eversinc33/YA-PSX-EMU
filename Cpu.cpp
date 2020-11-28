@@ -113,6 +113,13 @@ void Cpu::OP_ORI(const Instruction& instruction) {
 // store word opcode:
 // store the word in target in source plus memory offset of immediate
 void Cpu::OP_SW(const Instruction& instruction) {
+
+    if ((this->sr & 0x10000u) != 0u) {
+        // cache is isolated, ignore writing
+        std::cout << "STUB:ignoring_store_while_cache_is_isolated" << std::endl;
+        return;
+    }
+
     auto immediate = instruction.imm_se(); // SW is sign extending
     auto t = instruction.t();
     auto s = instruction.s();
