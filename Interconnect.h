@@ -16,6 +16,7 @@ public:
     };
 
     uint32_t load32(const uint32_t& address) const;
+    void store32(const uint32_t& address, const uint32_t& value);
 };
 
 

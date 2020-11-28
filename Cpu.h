@@ -27,22 +27,27 @@ public:
         this->interconnect = interconnect;
     }
     void runNextInstruction();
-    uint32_t getRegister(const uint32_t& t);
-    void setRegister(const uint32_t& t, const uint32_t& v);
-
 
 private:
+    void store32(const uint32_t& address, const uint32_t& value) const;
     uint32_t load32(const uint32_t& address) const;
     void decodeAndExecute(const uint32_t& instruction);
-
-    // Instruction Pointer (Program Counter)
-    uint32_t pc;
-    // 32 general purpose registers, set to deadbeef by default
-    uint32_t regs[32] = {};
 
     // opcodes
     void OP_LUI(const Instruction& instruction);
     void OP_ORI(const Instruction& instruction);
+    void OP_SW(const Instruction &instruction);
+    void OP_SLL(const Instruction &instruction);
+    void OP_ADDIU(const Instruction &instruction);
+
+    // registers
+    uint32_t pc; // Instruction Pointer (Program Counter)
+    uint32_t regs[32] = {}; // 32 general purpose registers
+    uint32_t getRegister(const uint32_t& t);
+
+    void setRegister(const uint32_t& t, const uint32_t& v);
+
+    unsigned int n_instructions = 0;
 };
 
 
