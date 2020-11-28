@@ -85,6 +85,10 @@ private:
     unsigned int n_instructions = 0;
 
     void branch(uint32_t offset);
+
+    void OP_LB(const Instruction &instruction);
+
+    uint8_t load8(const uint32_t &address);
 };
 
 

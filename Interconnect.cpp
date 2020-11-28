@@ -5,6 +5,17 @@
 #include <iostream>
 #include "Interconnect.h"
 
+uint8_t Interconnect::load8(const uint32_t& address) {
+    auto absAddr = this->maskRegion(address);
+
+    if (this->bios->range.contains(absAddr)) {
+        return this->bios->load8(absAddr - this->bios->range.start);
+    }
+
+    std::cout << "No peripheral for address " << address << std::endl;
+    throw std::exception();
+}
+
 // Load 32 bit from the appropriate peripehral, by checking
 // if it is in range of the memory and calculating the offset
 uint32_t Interconnect::load32(uint32_t address) {
@@ -102,3 +113,4 @@ uint32_t Interconnect::maskRegion(const uint32_t &address) {
     auto index = (uint8_t) (address >> 29u);
     return address & REGION_MASK[index];
 }
+

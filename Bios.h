@@ -25,6 +25,8 @@ public:
     Range range;
     unsigned char *data = nullptr;
 
+    uint8_t load8(const uint32_t &offset) const;
+
 private:
     void readBinary(const char *string, const uint32_t &i);
 };

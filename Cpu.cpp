@@ -117,6 +117,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b101000:
             this->OP_SB(instruction);
             break;
+        case 0b100000:
+            this->OP_LB(instruction);
+            break;
         case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
@@ -431,4 +434,23 @@ void Cpu::OP_JR(const Instruction &instruction) {
     std::cout << "jumping to addr in reg " << std::dec << s << std::endl;
     std::cout << "new PC: " << std::dec << this->getRegister(s) << std::endl;
     this->pc = this->getRegister(s);
+}
+
+uint8_t Cpu::load8(const uint32_t& address) {
+    return this->interconnect->load8(address);
+}
+
+// load byte
+void Cpu::OP_LB(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto addr = this->getRegister(s) + immediate;
+
+    // force sign extension by casting
+    auto value = (signed char) this->load8(addr);
+
+    // put load in the delay slot
+    this->load = { t, (uint32_t) value };
 }

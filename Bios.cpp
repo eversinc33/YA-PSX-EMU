@@ -5,6 +5,11 @@
 #include <iostream>
 #include "Bios.h"
 
+
+uint8_t Bios::load8(const uint32_t &offset) const {
+    return this->data[(unsigned char) offset];
+}
+
 // fetch the 32 bit little endian word at offset (offset = offset in bios memory range)
 uint32_t Bios::load32(const uint32_t& offset) const {
     auto b0 = (uint32_t) this->data[offset + 0];
@@ -39,3 +44,4 @@ void Bios::readBinary(const char* fname, const uint32_t& fileLen) {
     fread(data, fileLen, 1, file);
     fclose(file);
 }
+

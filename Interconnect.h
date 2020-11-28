@@ -45,6 +45,8 @@ public:
     void store16(const uint32_t &address, const uint16_t &value);
     void store8(const uint32_t &address, const uint8_t &value);
 
+    uint8_t load8(const uint32_t& address);
+
 private:
     uint32_t maskRegion(const uint32_t& address);
 };
