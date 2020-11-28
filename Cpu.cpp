@@ -16,7 +16,7 @@ void Cpu::runNextInstruction() {
 
     this->n_instructions++;
     std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
-    std::cout << "$8: " << std::hex << this->getRegister(8) << std::endl;
+    std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;
     std::cout << "$PC: " << this->pc << std::endl;
     std::cout << "Next instruction: " << std::hex << instruction.opcode << " | " << std::bitset<8>(instruction.function()) << std::endl;
 
@@ -65,6 +65,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             break;
         case 0b000010:
             this->OP_J(instruction);
+            break;
+        case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
+            this->OP_COP0(instruction);
             break;
         default:
             std::cout << "Unhandled instruction" << std::endl;
@@ -162,4 +165,33 @@ void Cpu::OP_OR(const Instruction &instruction) {
 
     auto value = this->getRegister(s) | this->getRegister(t);
     this->setRegister(d, value);
+}
+
+// coprocessor 0
+void Cpu::OP_COP0(const Instruction &instruction) {
+    switch(instruction.cop_opcode()) {
+        case 0b00100:
+            this->OP_MTC0(instruction);
+            break;
+        default:
+            std::cout << "Unhandled opcode for CoProcessor" << instruction.function() << std::endl;
+            throw std::exception();
+    }
+}
+
+// move to coprocessor0 opcode
+// loads bytes into a register of cop0
+void Cpu::OP_MTC0(const Instruction& instruction) {
+    auto cpu_r = instruction.t();
+    auto cop_r = instruction.d(); // which register of cop0 to load into
+
+    auto value = this->getRegister(cpu_r);
+
+    switch (cop_r) {
+        case 12: // status register
+            this->sr = value;
+            break;
+        default:
+            std::cout << "STUB:Unhandled_cop0_register:_" << std::dec << cop_r << std::endl;
+    }
 }

@@ -14,7 +14,8 @@ public:
     Interconnect* interconnect;
     Cpu(Interconnect* interconnect)
         : nextInstruction(0x0), // NOP
-          pc(0xbfc00000) // PC reset value at the beginning of the BIOS
+          pc(0xbfc00000), // PC reset value at the beginning of the BIOS
+          sr(0)
     {
         // set general purpose registers to default value
         for (uint32_t& reg : this->regs) {
@@ -41,10 +42,14 @@ private:
     void OP_ADDIU(const Instruction &instruction);
     void OP_J(const Instruction &instruction);
     void OP_OR(const Instruction &instruction);
+    // coprocessor opcodes
+    void OP_COP0(const Instruction &instruction);
+    void OP_MTC0(const Instruction &instruction);
 
     // registers
     uint32_t pc; // Instruction Pointer (Program Counter)
     uint32_t regs[32] = {}; // 32 general purpose registers
+    uint32_t sr; // cop0 register 12: status register
 
     uint32_t getRegister(const uint32_t& t);
 
@@ -53,6 +58,7 @@ private:
     Instruction nextInstruction;
 
     unsigned int n_instructions = 0;
+
 };
 
 

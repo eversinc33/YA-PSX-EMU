@@ -26,6 +26,7 @@ public:
     uint32_t imm_se() const;
     uint32_t imm_shift() const;
     uint32_t imm_jump() const;
+    uint32_t cop_opcode() const;
 
     uint32_t opcode;
 };

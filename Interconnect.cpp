@@ -52,6 +52,8 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         }
     } else if (RAM_SIZE_REGISTER.contains(address)) {
         std::cout << "STUB:Unhandled_write_to_RAM_SIZE_register:0x" << std::hex << value << std::endl;
+    } else if (CACHE_CONTROL.contains(address)) {
+        std::cout << "STUB:Unhandled_write_to_CACHE_CONTROL_register:0x" << std::hex << value << std::endl;
     } else {
         std::cout << "No storage peripheral for address " << address << std::endl;
         throw std::exception();

@@ -49,3 +49,8 @@ uint32_t Instruction::imm_shift() const {
 uint32_t Instruction::s() const {
     return (this->opcode >> 21u) & 0x1fu;
 }
+
+// return bits in 25:21 which describe the coprocessor opcode
+uint32_t Instruction::cop_opcode() const {
+    return (this->opcode >> 21u) & 0x1fu;
+}

@@ -10,5 +10,5 @@
 // http://problemkaputt.de/psx-spx.htm#memorymap
 const Range HARDWARE_REGISTERS = Range(0x1f801000, 36);
 const Range RAM_SIZE_REGISTER = Range(0x1f801060, 4); // register that does some ram configuration, set by the bios, should be save to ignore
-
+const Range CACHE_CONTROL = Range(0xfffe0130, 4);
 #endif //PSXEMU_MEMORYMAP_H
