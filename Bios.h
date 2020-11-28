@@ -23,7 +23,7 @@ public:
     uint32_t load32(const uint32_t& offset) const;
 
     Range range;
-    char *data;
+    unsigned char *data;
 
 private:
     void readBinary(const char *string, const uint32_t &i);
