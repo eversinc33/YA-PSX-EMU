@@ -7,11 +7,13 @@
 
 // Load 32 bit from the appropriate peripehral, by checking
 // if it is in range of the memory and calculating the offset
-uint32_t Interconnect::load32(const uint32_t &address) const {
+uint32_t Interconnect::load32(uint32_t address) {
     if (address % 4 != 0) {
         std::cout << "unaligned_load32_address_" << std::hex << address << std::endl;
         throw std::exception();
     }
+
+    address = this->maskRegion(address);
 
     if (this->bios->range.contains(address)) {
         uint32_t offset = (address - this->bios->range.start);
@@ -26,11 +28,13 @@ uint32_t Interconnect::load32(const uint32_t &address) const {
     throw std::exception();
 }
 
-void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
+void Interconnect::store32(uint32_t address, const uint32_t& value) {
     if (address % 4 != 0) {
         std::cout << "unaligned_store32_address_" << std::hex << address << std::endl;
         throw std::exception();
     }
+
+    address = this->maskRegion(address);
 
     if (HARDWARE_REGISTERS.contains(address)) {
         uint32_t offset = (address - HARDWARE_REGISTERS.start);
@@ -62,4 +66,9 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         std::cout << "No storage peripheral for address " << address << std::endl;
         throw std::exception();
     }
+}
+
+uint32_t Interconnect::maskRegion(const uint32_t &address) {
+    auto index = (uint8_t) (address >> 29u);
+    return address & REGION_MASK[index];
 }

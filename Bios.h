@@ -14,7 +14,7 @@
 
 class Bios {
 public:
-    const uint32_t START_ADDRESS = 0xbfc00000;
+    const uint32_t START_ADDRESS = 0x1fc00000;
 
     Bios(const char *fname, const uint32_t& buffersize) : range(Range(START_ADDRESS, buffersize)) {
         this->readBinary(fname, buffersize);

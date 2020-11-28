@@ -12,7 +12,7 @@
 
 class Ram {
 public:
-    const uint32_t START_ADDRESS = 0xa0000000;
+    const uint32_t START_ADDRESS = 0x00000000;
     const uint32_t SIZE = 2 * 1024 * 1024; // 2 MB
 
     std::vector<unsigned char> data;
