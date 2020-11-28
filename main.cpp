@@ -8,8 +8,9 @@ const uint32_t BUFFERSIZE = 512*1024; // 512KB bios size
 
 int main() {
     Bios bios = Bios(FNAME, BUFFERSIZE);
+    Ram ram = Ram();
 
-    Interconnect interconnect = Interconnect(&bios);
+    Interconnect interconnect = Interconnect(&bios, &ram);
 
     Cpu cpu = Cpu(&interconnect);
 

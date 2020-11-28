@@ -7,13 +7,12 @@
 
 // fetch the 32 bit little endian word at offset (offset = offset in bios memory range)
 uint32_t Bios::load32(const uint32_t& offset) const {
-    uint32_t b0 = this->data[offset + 0];
-    uint32_t b1 = this->data[offset + 1];
-    uint32_t b2 = this->data[offset + 2];
-    uint32_t b3 = this->data[offset + 3];
+    uint8_t b0 = this->data[offset + 0];
+    uint8_t b1 = this->data[offset + 1];
+    uint8_t b2 = this->data[offset + 2];
+    uint8_t b3 = this->data[offset + 3];
 
-    uint32_t little_endian = b0 | (b1 << 8u) | (b2 << 16u) | (b3 << 24u);
-    return little_endian;
+    return b0 | (b1 << 8u) | (b2 << 16u) | (b3 << 24u);
 }
 
 void Bios::readBinary(const char* fname, const uint32_t& fileLen) {
@@ -28,7 +27,7 @@ void Bios::readBinary(const char* fname, const uint32_t& fileLen) {
     }
 
     //Allocate memory
-    data= (unsigned char *) malloc(fileLen+1);
+    data = (unsigned char *) malloc(fileLen+1);
     if (!data)
     {
         fprintf(stderr, "Memory error!");

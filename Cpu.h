@@ -9,20 +9,31 @@
 #include "Interconnect.h"
 #include "Instruction.h"
 
+struct LoadRegister {
+    uint32_t index;
+    uint32_t value;
+};
+
 class Cpu {
 public:
     Interconnect* interconnect;
-    Cpu(Interconnect* interconnect)
+    explicit Cpu(Interconnect* interconnect)
         : nextInstruction(0x0), // NOP
           pc(0xbfc00000), // PC reset value at the beginning of the BIOS
-          sr(0)
+          sr(0),
+          load({0, 0})
     {
         // set general purpose registers to default value
         for (uint32_t& reg : this->regs) {
             reg = 0xdeadbeef;
         }
+        // same for the simulated delayed registers
+        for (uint32_t& reg : this->out_regs) {
+            reg = 0xdeadbeef;
+        }
         // R0 is hardwired to 0
         this->regs[0] = 0;
+        this->out_regs[0] = 0;
 
         // memory interface: interconnect for peripherals
         this->interconnect = interconnect;
@@ -38,6 +49,7 @@ private:
     void OP_LUI(const Instruction& instruction);
     void OP_ORI(const Instruction& instruction);
     void OP_SW(const Instruction &instruction);
+    void OP_LW(const Instruction &instruction);
     void OP_SLL(const Instruction &instruction);
     void OP_ADDIU(const Instruction &instruction);
     void OP_ADDI(const Instruction &instruction);
@@ -52,6 +64,9 @@ private:
     uint32_t pc; // Instruction Pointer (Program Counter)
     uint32_t regs[32] = {}; // 32 general purpose registers
     uint32_t sr; // cop0 register 12: status register
+    // custom registers
+    uint32_t out_regs[32] = {}; // second set of registers to emulate the load delay slot accurately. contain output of the curren instruction
+    LoadRegister load; // load initiated by the current instruction
 
     uint32_t getRegister(const uint32_t& t);
 
@@ -62,7 +77,6 @@ private:
     unsigned int n_instructions = 0;
 
     void branch(uint32_t offset);
-
 };
 
 

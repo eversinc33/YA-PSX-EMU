@@ -12,10 +12,10 @@
 #include <fstream>
 #include "Range.h"
 
-const uint32_t START_ADDRESS = 0xbfc00000;
-
 class Bios {
 public:
+    const uint32_t START_ADDRESS = 0xbfc00000;
+
     Bios(const char *fname, const uint32_t& buffersize) : range(Range(START_ADDRESS, buffersize)) {
         this->readBinary(fname, buffersize);
     }

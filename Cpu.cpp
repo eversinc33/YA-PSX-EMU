@@ -9,22 +9,28 @@
 #include "Instruction.h"
 
 void Cpu::runNextInstruction() {
-    // emulate branch delay slot
-    Instruction instruction = nextInstruction;
 
-    // Fetch instruction at PC (IP)
+    // emulate branch delay slot
+    // -> execute pending loads, if there is none, load $zero which is NOP
+    this->setRegister(this->load.index, this->load.value);
+    this->load = {0, 0}; // reset load register
+    // -> execute instruction, already fetch next instruction at PC (IP)
+    Instruction instruction = nextInstruction;
     this->nextInstruction = Instruction(this->load32(this->pc));
 
+    // debug
     this->n_instructions++;
     std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
     std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;
     std::cout << "$PC: " << this->pc << std::endl;
     std::cout << "Next instruction: " << std::hex << instruction.opcode << " | " << std::bitset<8>(instruction.function()) << std::endl;
 
-    // Increment PC to point to the next instruction. (each is 32 bit)
-    this->pc += 4;
+    this->pc += 4; // Increment PC to point to the next instruction. (each is 32 bit)
 
     this->decodeAndExecute(instruction);
+
+    // copy to actual registers
+    std::copy(std::begin(out_regs), std::end(out_regs), std::begin(regs));
 }
 
 uint32_t Cpu::load32(const uint32_t& address) const {
@@ -73,6 +79,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b000101:
             this->OP_BNE(instruction);
             break;
+        case 0b100011:
+            this->OP_LW(instruction);
+            break;
         case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
@@ -91,7 +100,8 @@ uint32_t Cpu::getRegister(const uint32_t &t) {
 
 void Cpu::setRegister(const uint32_t &t, const uint32_t &v) {
     std::cout << "Loading (in big endian) " << v << " into register " << t << std::endl;
-    this->regs[t] = v;
+    this->out_regs[t] = v;
+    this->out_regs[0] = 0;
 }
 
 // load upper immediate opcode:
@@ -136,6 +146,28 @@ void Cpu::OP_SW(const Instruction& instruction) {
 
     this->store32(address, value);
 }
+
+// load word opcode:
+void Cpu::OP_LW(const Instruction &instruction) {
+
+    if ((this->sr & 0x10000u) != 0u) {
+        // cache is isolated, ignore load
+        std::cout << "STUB:ignoring_load_while_cache_is_isolated" << std::endl;
+        return;
+    }
+
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto address = this->getRegister(s) + immediate;
+
+    auto value = this->load32(address);
+
+    // simulate loading delay by putting into laod registers
+    this->load = {t, value};
+}
+
 
 // shift left logical
 // shift bits from target by immediate to the left and store in destination
