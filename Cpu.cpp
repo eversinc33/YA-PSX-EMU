@@ -66,6 +66,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b000010:
             this->OP_J(instruction);
             break;
+        case 0b000101:
+            this->OP_BNE(instruction);
+            break;
         case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
@@ -172,6 +175,25 @@ void Cpu::OP_OR(const Instruction &instruction) {
 
     auto value = this->getRegister(s) | this->getRegister(t);
     this->setRegister(d, value);
+}
+
+// branch to immediate value offset
+void Cpu::branch(uint32_t offset) {
+    // offset immediates are shifted 2 to the right since PC/IP addresses are aligned to 32bis
+    offset = offset < 2u;
+
+    this->pc = this->pc + (offset - 4); // compensate for the pc += 4 of run_next_instruction
+}
+
+// branch (if) not equal
+void Cpu::OP_BNE(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    if (this->getRegister(s) != this->getRegister(t)) {
+        this->branch(immediate);
+    }
 }
 
 // coprocessor 0
