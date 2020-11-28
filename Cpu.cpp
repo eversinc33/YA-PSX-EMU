@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <bitset>
+#include <tiff.h>
 #include "Cpu.h"
 #include "Instruction.h"
 
@@ -62,6 +63,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             }
         case 0b001001:
             this->OP_ADDIU(instruction);
+            break;
+        case 0b001000:
+            this->OP_ADDI(instruction);
             break;
         case 0b000010:
             this->OP_J(instruction);
@@ -153,6 +157,34 @@ void Cpu::OP_ADDIU(const Instruction& instruction) {
     auto s = instruction.s();
 
     auto value = this->getRegister(s) + immediate;
+    this->setRegister(t, value);
+}
+
+// check if theres an overflow happening on adding x and y
+bool addOverflow(uint32_t x, uint32_t y, uint32_t &res)
+{
+    uint32_t temp = x + y;
+    if(x>0 && y>0 && temp<0)
+        return true;
+    if(x<0 && y<0 && temp>0)
+        return true;
+
+    res = x + y;
+    return false;
+}
+
+// add immediate
+// we simply add immediate to source, save in target and throw an exception on overflow
+void Cpu::OP_ADDI(const Instruction& instruction) {
+    auto immediate = (int32) instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    uint32_t value;
+    if (addOverflow(s, immediate, value)) {
+        std::cout << "ADDI_overflow" << std::endl;
+        throw std::exception();
+    }
     this->setRegister(t, value);
 }
 
