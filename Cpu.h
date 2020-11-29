@@ -62,6 +62,11 @@ private:
     void OP_ANDI(const Instruction &instruction);
     void OP_SB(const Instruction &instruction);
     void OP_JR(const Instruction &instruction);
+    void OP_LB(const Instruction &instruction);
+    void OP_BEQ(const Instruction &instruction);
+    void OP_AND(const Instruction &instruction);
+    void OP_JALR(const Instruction &instruction);
+    void OP_MFC0(const Instruction &instruction);
     // coprocessor opcodes
     void OP_COP0(const Instruction &instruction);
     void OP_MTC0(const Instruction &instruction);
@@ -83,13 +88,10 @@ private:
 
     void branch(uint32_t offset);
 
-    void OP_LB(const Instruction &instruction);
 
     uint8_t load8(const uint32_t &address) const;
 
-    void OP_BEQ(const Instruction &instruction);
-
-    void OP_JALR(const Instruction &instruction);
+    void OP_ADD(const Instruction &instruction);
 };
 
 

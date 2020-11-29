@@ -89,6 +89,10 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                     std::cout << "OP_OR" << std::endl;
                     this->OP_OR(instruction);
                     break;
+                case 0b100100:
+                    std::cout << "OP_AND" << std::endl;
+                    this->OP_AND(instruction);
+                    break;
                 case 0b101011:
                     std::cout << "OP_SLTU" << std::endl;
                     this->OP_SLTU(instruction);
@@ -96,6 +100,10 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b100001:
                     std::cout << "OP_ADDU" << std::endl;
                     this->OP_ADDU(instruction);
+                    break;
+                case 0b100000:
+                    std::cout << "OP_ADD" << std::endl;
+                    this->OP_ADD(instruction);
                     break;
                 case 0b001000:
                     std::cout << "OP_JR" << std::endl;
@@ -349,6 +357,17 @@ void Cpu::OP_OR(const Instruction &instruction) {
     this->setRegister(d, value);
 }
 
+// and
+// bitwise and
+void Cpu::OP_AND(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    auto value = this->getRegister(s) & this->getRegister(t);
+    this->setRegister(d, value);
+}
+
 // set on less than unsigned
 // set rd to 0 1 depending on wheter rs is less than rt
 void Cpu::OP_SLTU(const Instruction& instruction) {
@@ -400,8 +419,11 @@ void Cpu::OP_COP0(const Instruction &instruction) {
         case 0b00100:
             this->OP_MTC0(instruction);
             break;
+        case 0b00000:
+            this->OP_MFC0(instruction);
+            break;
         default:
-            std::cout << "Unhandled opcode for CoProcessor" << instruction.function() << std::endl;
+            std::cout << "Unhandled opcode for CoProcessor" << std::bitset<8>(instruction.cop_opcode()) << std::endl;
             throw std::exception();
     }
 }
@@ -503,4 +525,44 @@ void Cpu::OP_JALR(const Instruction &instruction) {
 
     this->setRegister(d, this->pc);
     this->pc = this->getRegister(s);
+}
+
+// move from coprocessor0
+// read from a coprocessor register into target
+void Cpu::OP_MFC0(const Instruction& instruction) {
+    auto cpu_r = instruction.t();
+    auto cop_r = instruction.d().index;
+
+    uint32_t value;
+    switch (cop_r) {
+        case 12: // status register
+            value = this->sr;
+            break;
+        case 13: // cause register, for exceptions
+            std::cout << "Unhandled_read_from_CAUSE_register:_" << std::dec << value << std::endl;
+            throw std::exception();
+        default:
+            std::cout << "STUB:Unhandled_read_from_cop0_register:_" << std::dec << cop_r << std::endl;
+    }
+
+    this->load = {cpu_r, value};
+
+}
+
+// add , throw exception on signed overflow
+void Cpu::OP_ADD(const Instruction &instruction) {
+    auto t = instruction.t();
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    auto s_add = (int32) this->getRegister(s);
+    auto t_add = (int32) this->getRegister(t);
+
+    uint32_t value;
+    if (addOverflow(s_add, t_add, value)) {
+        std::cout << "ADD_overflow" << std::endl;
+        throw std::exception();
+    }
+
+    this->setRegister(d, value);
 }
