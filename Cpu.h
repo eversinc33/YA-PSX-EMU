@@ -14,7 +14,6 @@ struct LoadRegister {
     uint32_t value;
 };
 
-
 enum Exception {
     SysCall = 0x8, // caused by syscall opcode
 };
@@ -115,6 +114,16 @@ private:
     void branch(uint32_t offset);
     void exception(Exception exception);
     uint8_t load8(const uint32_t &address) const;
+
+    void OP_SYSCALL(const Instruction &instruction);
+
+    void OP_MTLO(const Instruction &instruction);
+
+    void OP_MTHI(const Instruction &instruction);
+
+    void OP_NOR(const Instruction &instruction);
+
+    void OP_RFE(const Instruction &instruction);
 };
 
 

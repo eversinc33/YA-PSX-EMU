@@ -25,7 +25,7 @@ void Cpu::runNextInstruction() {
 
     // emulate branch delay slot: execute pending loads, if there are none, load $zero which is NOP
     this->setRegister(this->load.registerIndex, this->load.value);
-    this->load = {0, 0}; // reset load register
+    this->load = {{0}, 0}; // reset load register
 
     // debug
     this->n_instructions++;
@@ -124,8 +124,21 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b101010:
                     this->OP_SLT(instruction);
                     break;
+                case 0b001100:
+                    this->OP_SYSCALL(instruction);
+                    break;
+                /*case 0b010011:
+                    this->OP_MTLO(instruction);
+                    break;
+                case 0b010001:
+                    this->OP_MTHI(instruction);
+                    break;
+                case 0b100111:
+                    this->OP_NOR(instruction);
+                    break;*/
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
+                    std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
                     throw std::exception();
             }
             break;
@@ -185,6 +198,7 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             break;
         default:
             std::cout << "Unhandled instruction" << std::endl;
+            std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
             throw std::exception();
     }
 }
@@ -437,7 +451,11 @@ void Cpu::OP_COP0(const Instruction &instruction) {
         case 0b00000:
             this->OP_MFC0(instruction);
             break;
+        /*case 0b010000:
+            this->OP_RFE(instruction);
+            break;*/
         default:
+            std::cout << "Unhandled opcode " << std::hex << instruction.opcode << std::endl;
             std::cout << "Unhandled opcode for CoProcessor" << std::bitset<8>(instruction.cop_opcode()) << std::endl;
             throw std::exception();
     }
@@ -559,6 +577,7 @@ void Cpu::OP_MFC0(const Instruction& instruction) {
             break;
         default:
             std::cout << "STUB:Unhandled_read_from_cop0_register:_" << std::dec << cop_r << std::endl;
+            throw std::exception();
     }
 
     this->load = {cpu_r, value};
@@ -778,5 +797,58 @@ void Cpu::exception(Exception exception) {
     // exception handler address depends on the BEV bit
     auto handler = (this->sr & (1u << 22u)) != 0 ? 0xbfc00180 : 0x80000080;
 
+    // shift bits 5:0 of the status register (SR) two to the left
+    // by shifting these, the cpu is put into kernel mode
+    auto mode = this->sr & 0x3fu;
+    this->sr &= ~0x3fu;
+    this->sr |= (mode << 2u) & 0x3fu;
 
+    // update cause register with bits 6:2 (the exception code)
+    this->cause = ((uint32_t) cause) << 2u;
+
+    // save current instruction address in EPC
+    this->epc = this->current_pc;
+
+    // no branch delay in exceptions!
+    this->pc = handler;
+    this->next_pc = this->pc + 4;
+}
+
+void Cpu::OP_SYSCALL(const Instruction& instruction) {
+    this->exception(SysCall);
+}
+
+// move to LO
+void Cpu::OP_MTLO(const Instruction &instruction) {
+    auto s = instruction.s();
+    this->lo = this->getRegister(s);
+}
+
+// move to HI
+void Cpu::OP_MTHI(const Instruction &instruction) {
+    auto s = instruction.s();
+    this->hi = this->getRegister(s);
+}
+
+void Cpu::OP_NOR(const Instruction &instruction) {
+    auto d = instruction.d();
+    auto s = instruction.s();
+    auto t = instruction.t();
+    auto value = ~(this->getRegister(s) | this->getRegister(t));
+    this->setRegister(d, value);
+}
+
+// return from exceptions
+void Cpu::OP_RFE(const Instruction &instruction) {
+    // there are more instructions with the same encoding, which the playstation does not use
+    // since they are virtual memory related.
+    // still check for buggy code
+    if ((instruction.opcode & 0x3fu) != 0b010000) {
+        std::cout << "Invalid_cop0_instruction:_" << instruction.opcode << std::endl;
+    }
+
+    // restore the pre-exception mode by shifting the interrupt bits of the status register back
+    auto mode = this->sr & 0x3fu;
+    this->sr &= ~0x3fu;
+    this->sr |= mode >> 2u;
 }
