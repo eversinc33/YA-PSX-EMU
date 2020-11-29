@@ -21,6 +21,8 @@ public:
         : nextInstruction(0x0), // NOP
           pc(0xbfc00000), // PC reset value at the beginning of the BIOS
           sr(0),
+          hi(0xdeadbeef),
+          lo(0xdeadbeef),
           load({{0}, 0})
     {
         // set general purpose registers to default value
@@ -75,6 +77,8 @@ private:
     uint32_t pc; // Instruction Pointer (Program Counter)
     uint32_t regs[32] = {}; // 32 general purpose registers
     uint32_t sr; // cop0 register 12: status register
+    uint32_t hi; // hi register for divison remainder and multiplication high result
+    uint32_t lo; // lo register for division quotient and multiplication low result
     // custom registers
     uint32_t out_regs[32] = {}; // second set of registers to emulate the load delay slot accurately. contain output of the curren instruction
     LoadRegister load; // load initiated by the current instruction
@@ -98,6 +102,28 @@ private:
     void OP_BLEZ(const Instruction &instruction);
 
     void OP_LBU(const Instruction &instruction);
+
+    void OP_BXX(const Instruction &instruction);
+
+    void OP_SLTI(const Instruction &instruction);
+
+    void OP_SUBU(const Instruction &instruction);
+
+    void OP_SRA(const Instruction &instruction);
+
+    void OP_DIV(const Instruction &instruction);
+
+    void OP_MFLO(const Instruction &instruction);
+
+    void OP_SRL(const Instruction &instruction);
+
+    void OP_SLTIU(const Instruction &instruction);
+
+    void OP_DIVU(const Instruction &instruction);
+
+    void OP_MFHI(const Instruction &instruction);
+
+    void OP_SLT(const Instruction &instruction);
 };
 
 

@@ -113,6 +113,38 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                     std::cout << "OP_JR" << std::endl;
                     this->OP_JR(instruction);
                     break;
+                case 0b100011:
+                    std::cout << "OP_SUBU" << std::endl;
+                    this->OP_SUBU(instruction);
+                    break;
+                case 0b000011:
+                    std::cout << "OP_SRA" << std::endl;
+                    this->OP_SRA(instruction);
+                    break;
+                case 0b011010:
+                    std::cout << "OP_DIV" << std::endl;
+                    this->OP_DIV(instruction);
+                    break;
+                case 0b011011:
+                    std::cout << "OP_DIVU" << std::endl;
+                    this->OP_DIVU(instruction);
+                    break;
+                case 0b010010:
+                    std::cout << "OP_MFLO" << std::endl;
+                    this->OP_MFLO(instruction);
+                    break;
+                case 0b000010:
+                    std::cout << "OP_SRL" << std::endl;
+                    this->OP_SRL(instruction);
+                    break;
+                case 0b010000:
+                    std::cout << "OP_MFHI" << std::endl;
+                    this->OP_MFHI(instruction);
+                    break;
+                case 0b101010:
+                    std::cout << "OP_SLT" << std::endl;
+                    this->OP_SLT(instruction);
+                    break;
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     throw std::exception();
@@ -173,6 +205,18 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b000110:
             std::cout << "OP_BLEZ" << std::endl;
             this->OP_BLEZ(instruction);
+            break;
+        case 0b001010:
+            std::cout << "OP_SLTI" << std::endl;
+            this->OP_SLTI(instruction);
+            break;
+        case 0b001011:
+            std::cout << "OP_SLTIU" << std::endl;
+            this->OP_SLTIU(instruction);
+            break;
+        case 0b000001:
+            std::cout << "OP_BXX: ";
+            this->OP_BXX(instruction);
             break;
         case 0b010000:
             std::cout << "OP_COP0" << std::endl; // this one is for the coprocessor 0 which handles its own opcodes
@@ -385,7 +429,7 @@ void Cpu::OP_AND(const Instruction &instruction) {
 }
 
 // set on less than unsigned
-// set rd to 0 1 depending on wheter rs is less than rt
+// set rd to 0 or 1 depending on wheter rs is less than rt
 void Cpu::OP_SLTU(const Instruction& instruction) {
     auto s = instruction.s();
     auto t = instruction.t();
@@ -620,4 +664,156 @@ void Cpu::OP_LBU(const Instruction &instruction) {
 
     // put load in the delay slot
     this->load = { t, (uint32_t) value };
+}
+
+// several opcodes: BLTZ, BLTZAL, BGEZ, BGEZAL
+// bits 16 to 20 define which one
+void Cpu::OP_BXX(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto s = instruction.s();
+
+    // if bit 16 is set, its BGEZ, otherwise BLTZ
+    bool isBgez = (instruction.opcode >> 16u) & 1u;
+    // if bits 20-17 are 0x80 then the return address is linked in $ra
+    bool shouldLinkReturn = ((instruction.opcode >> 17u) & 0xfu) == 8;
+
+    auto value = (int32_t) this->getRegister(s);
+
+    // test if LTZ
+    auto test = (uint32_t) (value < 0);
+    // if the test we want is GEZ, we negate the comparison above by XORing
+    // this saves a branch and thus speeds it up
+    test = test ^ isBgez;
+
+    if (shouldLinkReturn) {
+        auto ra = this->pc;
+        this->setRegister({31}, ra);
+    }
+
+    if (test != 0) {
+        this->branch(immediate);
+    }
+}
+
+// substract unsigned
+void Cpu::OP_SUBU(const Instruction &instruction) {
+    auto t = instruction.t();
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    auto value = this->getRegister(s) - this->getRegister(t);
+    this->setRegister(d, value);
+}
+
+// shift right arithmetic (arithmetic = signed)
+void Cpu::OP_SRA(const Instruction &instruction) {
+    auto immediate = instruction.imm_shift();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    // cast to signed to preserve sign bit
+    auto value = ((int32_t) this->getRegister(t)) >> immediate;
+
+    this->setRegister(d, (uint32_t) value);
+}
+
+// shift right logical (unsigned)
+void Cpu::OP_SRL(const Instruction &instruction) {
+    auto immediate = instruction.imm_shift();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    // cast to signed to preserve sign bit
+    auto value = this->getRegister(t) >> immediate;
+
+    this->setRegister(d, value);
+}
+
+// divide (signed)
+void Cpu::OP_DIV(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    auto n = (int32_t) this->getRegister(s); // numerator
+    auto d = (int32_t) this->getRegister(t); // denominator -> n / d
+
+    if (d == 0) {
+        // division by zero, set bogus result
+        this->hi = (uint32_t) n;
+        if (n >= 0) {
+            this->lo = 0xffffffff;
+        } else {
+            this->lo = 1;
+        }
+    } else if ((uint32_t) n == 0x80000000 && d == -1) {
+        // result is not representable in 32 bit signed ints
+        this->hi = 0;
+        this->lo = 0x80000000;
+    } else {
+        this->hi = (uint32_t) (n % d);
+        this->lo = (uint32_t) (n / d);
+    }
+}
+
+// divide unsigned
+void Cpu::OP_DIVU(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    auto n = this->getRegister(s); // numerator
+    auto d = this->getRegister(t); // denominator -> n / d
+
+    if (d == 0) {
+        // division by zero, set bogus result
+        this->hi = n;
+        this->lo = 0xffffffff;
+    } else {
+        this->hi = n % d;
+        this->lo = n / d;
+    }
+}
+
+// move from lo-register
+void Cpu::OP_MFLO(const Instruction &instruction) {
+    // TODO should stall if division not done yet
+    auto d = instruction.d();
+    this->setRegister(d, this->lo);
+}
+
+// set less than immediate unsigned
+void Cpu::OP_SLTIU(const Instruction &instruction) {
+    auto immediate = (int32_t) instruction.imm_se();
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    auto value = this->getRegister(s) < immediate;
+    this->setRegister(t, (uint32_t) value);
+}
+
+// set less than immediate
+// set t to 1 if s less than immediate else to 0
+void Cpu::OP_SLTI(const Instruction &instruction) {
+    auto immediate = (int32_t) instruction.imm_se();
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    auto value = ((int32_t) this->getRegister(s)) < immediate;
+    this->setRegister(t, (uint32_t) value);
+}
+
+// move from hi
+void Cpu::OP_MFHI(const Instruction &instruction) {
+    // TODO should stall if division not done yet
+    auto d = instruction.d();
+    this->setRegister(d, this->hi);
+}
+
+// set on less than (signed)
+void Cpu::OP_SLT(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    auto value = ((int32_t) this->getRegister(s)) < ((int32_t) this->getRegister(t));
+    this->setRegister(d, (uint32_t) value);
 }

@@ -23,11 +23,15 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         uint32_t offset = (absAddr - this->ram->range.start);
         return this->ram->load32(offset);
     }
+    if (IRQ_CONTROL.contains(absAddr)) {
+        std::cout << "STUB:IRQ_control_read" << std::endl;
+        return 0; // we do not have interrupts for now so just return 0
+    }
     if (EXPANSION_1.contains(absAddr)) {
         return 0xffffffff; // no expansion connected, so all ones
     }
 
-    std::cout << "No peripheral for address " << absAddr << std::endl;
+    std::cout << "Unhandled_load32_from_" << absAddr << std::endl;
     throw std::exception();
 }
 
@@ -66,7 +70,7 @@ uint8_t Interconnect::load8(const uint32_t& address) {
         return this->ram->load8(offset);
     }
 
-    std::cout << "No peripheral for address " << absAddr << std::endl;
+    std::cout << "Unhandled_load8_from_" << absAddr << std::endl;
     throw std::exception();
 }
 
@@ -80,6 +84,10 @@ void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
 
     if (SPU.contains(absAddr)) {
         std::cout << "STUB:Unhandled_write_to_SPU_register:0x" << std::hex << value << std::endl;
+        return;
+    }
+    if (TIMERS.contains(absAddr)) {
+        std::cout << "STUB:Unhandled_write_to_TIMER_register:0x" << std::hex << value << std::endl;
         return;
     }
 
