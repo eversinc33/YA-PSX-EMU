@@ -27,13 +27,10 @@ public:
         for (uint32_t& reg : this->regs) {
             reg = 0xdeadbeef;
         }
-        // same for the simulated delayed registers
-        for (uint32_t& reg : this->out_regs) {
-            reg = 0xdeadbeef;
-        }
         // R0 is hardwired to 0
         this->regs[0] = 0;
-        this->out_regs[0] = 0;
+        // out regs mirror the regs
+        std::copy(std::begin(regs), std::end(regs), std::begin(out_regs));
 
         // memory interface: interconnect for peripherals
         this->interconnect = interconnect;

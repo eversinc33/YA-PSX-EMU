@@ -7,7 +7,7 @@
 
 
 uint8_t Bios::load8(const uint32_t &offset) const {
-    return this->data[(unsigned char) offset];
+    return this->data[offset];
 }
 
 // fetch the 32 bit little endian word at offset (offset = offset in bios memory range)

@@ -10,18 +10,19 @@
 
 void Cpu::runNextInstruction() {
 
-    if (this->pc % 4 != 0) {
+    /*if (this->pc % 4 != 0) {
         std::cout << "pc_not_aligned_with_32bit!" << std::endl;
         throw std::exception();
-    }
+    }*/
 
-    // emulate branch delay slot
-    // -> execute pending loads, if there is none, load $zero which is NOP
-    this->setRegister(this->load.index, this->load.value);
-    this->load = {0, 0}; // reset load register
+    // emulate branch delay slot:
     // -> execute instruction, already fetch next instruction at PC (IP)
     Instruction instruction = nextInstruction;
     this->nextInstruction = Instruction(this->load32(this->pc));
+
+    // -> execute pending loads, if there are none, load $zero which is NOP
+    this->setRegister(this->load.index, this->load.value);
+    this->load = {0, 0}; // reset load register
 
     // debug
     this->n_instructions++;
@@ -193,7 +194,7 @@ void Cpu::OP_SH(const Instruction &instruction) {
 // store the word in target in source plus memory offset of immediate
 void Cpu::OP_SW(const Instruction& instruction) {
 
-    if ((this->sr & 0x10000u) != 0u) {
+    if ((this->sr & 0x10000u) != 0) {
         // cache is isolated, ignore writing
         std::cout << "STUB:ignoring_store_while_cache_is_isolated" << std::endl;
         return;
@@ -212,7 +213,7 @@ void Cpu::OP_SW(const Instruction& instruction) {
 // load word opcode:
 void Cpu::OP_LW(const Instruction &instruction) {
 
-    if ((this->sr & 0x10000u) != 0u) {
+    if ((this->sr & 0x10000u) != 0) {
         // cache is isolated, ignore load
         std::cout << "STUB:ignoring_load_while_cache_is_isolated" << std::endl;
         return;
@@ -250,7 +251,7 @@ void Cpu::OP_ADDIU(const Instruction& instruction) {
     auto t = instruction.t();
     auto s = instruction.s();
 
-    auto value = this->getRegister(s) + immediate; // TODO: BUG?
+    auto value = this->getRegister(s) + immediate;
     this->setRegister(t, value);
 }
 
@@ -272,7 +273,7 @@ bool addOverflow(uint32_t x, uint32_t y, uint32_t &res)
 void Cpu::OP_ADDI(const Instruction& instruction) {
     auto immediate = (int32) instruction.imm_se();
     auto t = instruction.t();
-    auto s = instruction.s();
+    auto s = (int32) instruction.s();
 
     uint32_t value;
     if (addOverflow(s, immediate, value)) {
@@ -342,7 +343,8 @@ void Cpu::branch(uint32_t offset) {
     // offset immediates are shifted 2 to the right since PC/IP addresses are aligned to 32bis
     offset = offset < 2u;
 
-    this->pc = this->pc + (offset - 4); // compensate for the pc += 4 of run_next_instruction
+    this->pc = this->pc + offset;
+    this->pc = this->pc - 4; // compensate for the pc += 4 of run_next_instruction
 }
 
 // branch (if) not equal

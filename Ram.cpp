@@ -17,10 +17,10 @@ uint32_t Ram::load32(const uint32_t& offset) const {
 }
 
 void Ram::store32(const uint32_t &offset, const uint32_t &value) {
-    auto b0 = (uint32_t) value;
-    auto b1 = (uint32_t) value >> 8u;
-    auto b2 = (uint32_t) value >> 16u;
-    auto b3 = (uint32_t) value >> 24u;
+    auto b0 = (uint8_t) value;
+    auto b1 = (uint8_t) value >> 8u;
+    auto b2 = (uint8_t) value >> 16u;
+    auto b3 = (uint8_t) value >> 24u;
 
     this->data[offset + 0] = b0;
     this->data[offset + 1] = b1;
@@ -29,9 +29,9 @@ void Ram::store32(const uint32_t &offset, const uint32_t &value) {
 }
 
 void Ram::store8(const uint32_t &offset, const uint8_t &value) {
-    this->data[(unsigned char) offset] = value;
+    this->data[offset] = value;
 }
 
 uint8_t Ram::load8(const uint32_t &offset) {
-    return this->data[(unsigned char) offset];
+    return this->data[offset];
 }
