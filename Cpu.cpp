@@ -468,3 +468,12 @@ void Cpu::OP_BEQ(const Instruction &instruction) {
         this->branch(immediate);
     }
 }
+
+// jump and link register
+void Cpu::OP_JALR(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    this->setRegister(d, this->pc);
+    this->pc = this->getRegister(s);
+}

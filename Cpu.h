@@ -91,6 +91,8 @@ private:
     uint8_t load8(const uint32_t &address) const;
 
     void OP_BEQ(const Instruction &instruction);
+
+    void OP_JALR(const Instruction &instruction);
 };
 
 
