@@ -15,13 +15,13 @@ uint32_t Instruction::subfunction() const {
 }
 
 // return register index in bits 15:11
-uint32_t Instruction::d() const {
-    return (this->opcode >> 11u) & 0x1fu;
+RegisterIndex Instruction::d() const {
+    return RegisterIndex{ (this->opcode >> 11u) & 0x1fu };
 }
 
 // return register index in bits 20:16
-uint32_t Instruction::t() const {
-    return (this->opcode >> 16u) & 0x1fu;
+RegisterIndex Instruction::t() const {
+    return RegisterIndex{ (this->opcode >> 16u) & 0x1fu };
 }
 
 // return immediate value index in bits 16:0
@@ -46,8 +46,8 @@ uint32_t Instruction::imm_shift() const {
 }
 
 // return register index in bits 25:21
-uint32_t Instruction::s() const {
-    return (this->opcode >> 21u) & 0x1fu;
+RegisterIndex Instruction::s() const {
+    return RegisterIndex{ (this->opcode >> 21u) & 0x1fu };
 }
 
 // return bits in 25:21 which describe the coprocessor opcode

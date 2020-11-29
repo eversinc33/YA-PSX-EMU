@@ -21,15 +21,18 @@ void Cpu::runNextInstruction() {
     this->nextInstruction = Instruction(this->load32(this->pc));
 
     // -> execute pending loads, if there are none, load $zero which is NOP
-    this->setRegister(this->load.index, this->load.value);
-    this->load = {0, 0}; // reset load register
+    if (this->load.registerIndex.index != 0) {
+        std::cout << std::endl << "delayed load: ";
+        this->setRegister(this->load.registerIndex, this->load.value);
+        this->load = {0, 0}; // reset load register
+    }
 
     // debug
     this->n_instructions++;
-    /*std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
-    std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;*/
-    std::cout << std::endl << "$PC: " << this->pc << std::endl;
-    std::cout << "Next instruction: " << std::hex << instruction.opcode << " | " << std::bitset<8>(instruction.function()) << std::endl;
+    std::cout << std::endl << std::dec << "#" << n_instructions << " | ";
+    /*std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;*/
+    std::cout << "$PC: " << this->pc << std::endl;
+    std::cout << "Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
 
     this->pc = this->pc + 4; // Increment PC to point to the next instruction. (each is 32 bit)
 
@@ -154,19 +157,14 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
     }
 }
 
-uint32_t Cpu::getRegister(const uint32_t &t) {
-    if (t == 0) {
-        return 0; // r0 is always zero
-    }
-    return this->regs[t];
+uint32_t Cpu::getRegister(const RegisterIndex &t) {
+    return this->regs[t.index];
 }
 
-void Cpu::setRegister(const uint32_t &t, const uint32_t &v) {
-    if (t == 0) {
-        return; // r0 is always zero // this->out_regs[0] = 0;
-    }
-    std::cout << "Loading (in big endian) " << std::dec << v << " into register " << t << std::endl;
-    this->out_regs[t] = v;
+void Cpu::setRegister(const RegisterIndex &t, const uint32_t &v) {
+    this->out_regs[0] = 0; // r0 is always zero
+    std::cout << "Loading (in big endian) " << std::dec << v << " into register " << t.index << std::endl;
+    this->out_regs[t.index] = v;
 }
 
 // load upper immediate opcode:
@@ -294,7 +292,7 @@ bool addOverflow(uint32_t x, uint32_t y, uint32_t &res)
 void Cpu::OP_ADDI(const Instruction& instruction) {
     auto immediate = (int32) instruction.imm_se();
     auto t = instruction.t();
-    auto s = (int32) instruction.s();
+    auto s = (int32) instruction.s().index;
 
     uint32_t value;
     if (addOverflow(s, immediate, value)) {
@@ -332,7 +330,7 @@ void Cpu::OP_JAL(const Instruction &instruction) {
     auto ra = this->pc;
 
     // store return in ra
-    this->setRegister(31, ra);
+    this->setRegister({ 31 }, ra);
 
     this->OP_J(instruction);
 }
@@ -406,7 +404,7 @@ void Cpu::OP_COP0(const Instruction &instruction) {
 // loads bytes into a register of cop0
 void Cpu::OP_MTC0(const Instruction& instruction) {
     auto cpu_r = instruction.t();
-    auto cop_r = instruction.d(); // which register of cop0 to load into
+    auto cop_r = instruction.d().index; // which register of cop0 to load into
 
     auto value = this->getRegister(cpu_r);
 
@@ -457,7 +455,7 @@ void Cpu::OP_SB(const Instruction &instruction) {
 // set PC to value stored in a register
 void Cpu::OP_JR(const Instruction &instruction) {
     auto s = instruction.s();
-    std::cout << "jumping to addr in reg " << std::dec << s << std::endl;
+    std::cout << "jumping to addr in reg " << std::dec << s.index << std::endl;
     std::cout << "new PC: " << std::dec << this->getRegister(s) << std::endl;
     this->pc = this->getRegister(s);
 }

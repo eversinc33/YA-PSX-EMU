@@ -10,7 +10,7 @@
 #include "Instruction.h"
 
 struct LoadRegister {
-    uint32_t index;
+    RegisterIndex registerIndex;
     uint32_t value;
 };
 
@@ -21,7 +21,7 @@ public:
         : nextInstruction(0x0), // NOP
           pc(0xbfc00000), // PC reset value at the beginning of the BIOS
           sr(0),
-          load({0, 0})
+          load({{0}, 0})
     {
         // set general purpose registers to default value
         for (uint32_t& reg : this->regs) {
@@ -74,8 +74,8 @@ private:
     uint32_t out_regs[32] = {}; // second set of registers to emulate the load delay slot accurately. contain output of the curren instruction
     LoadRegister load; // load initiated by the current instruction
     // get and set
-    uint32_t getRegister(const uint32_t& t);
-    void setRegister(const uint32_t& t, const uint32_t& v);
+    uint32_t getRegister(const RegisterIndex& t);
+    void setRegister(const RegisterIndex& t, const uint32_t& v);
 
     Instruction nextInstruction;
 
