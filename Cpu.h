@@ -88,7 +88,9 @@ private:
 
     void OP_LB(const Instruction &instruction);
 
-    uint8_t load8(const uint32_t &address);
+    uint8_t load8(const uint32_t &address) const;
+
+    void OP_BEQ(const Instruction &instruction);
 };
 
 

@@ -120,6 +120,9 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b100000:
             this->OP_LB(instruction);
             break;
+        case 0b000100:
+            this->OP_BEQ(instruction);
+            break;
         case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
@@ -436,11 +439,11 @@ void Cpu::OP_JR(const Instruction &instruction) {
     this->pc = this->getRegister(s);
 }
 
-uint8_t Cpu::load8(const uint32_t& address) {
+uint8_t Cpu::load8(const uint32_t& address) const {
     return this->interconnect->load8(address);
 }
 
-// load byte
+// load byte (signed)
 void Cpu::OP_LB(const Instruction &instruction) {
     auto immediate = instruction.imm_se();
     auto t = instruction.t();
@@ -449,8 +452,19 @@ void Cpu::OP_LB(const Instruction &instruction) {
     auto addr = this->getRegister(s) + immediate;
 
     // force sign extension by casting
-    auto value = (signed char) this->load8(addr);
+    auto value = (int8_t) this->load8(addr);
 
     // put load in the delay slot
     this->load = { t, (uint32_t) value };
+}
+
+// branch if equal
+void Cpu::OP_BEQ(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    if (this->getRegister(s) == this->getRegister(t)) {
+        this->branch(immediate);
+    }
 }

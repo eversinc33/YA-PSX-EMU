@@ -27,3 +27,11 @@ void Ram::store32(const uint32_t &offset, const uint32_t &value) {
     this->data[offset + 2] = b2;
     this->data[offset + 3] = b3;
 }
+
+void Ram::store8(const uint32_t &offset, const uint8_t &value) {
+    this->data[(unsigned char) offset] = value;
+}
+
+uint8_t Ram::load8(const uint32_t &offset) {
+    return this->data[(unsigned char) offset];
+}

@@ -26,6 +26,10 @@ public:
 
     uint32_t load32(const uint32_t &offset) const;
     void store32(const uint32_t &offset, const uint32_t& value);
+
+    uint8_t load8(const uint32_t &offset);
+
+    void store8(const uint32_t &offset, const uint8_t &value);
 };
 
 
