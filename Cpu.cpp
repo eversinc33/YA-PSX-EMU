@@ -15,31 +15,29 @@ void Cpu::runNextInstruction() {
         throw std::exception();
     }
 
-    // emulate branch delay slot:
-    // -> execute instruction, already fetch next instruction at PC (IP)
-    Instruction instruction = nextInstruction;
-    this->nextInstruction = Instruction(this->load32(this->pc));
+    // emulate branch delay slot: execute instruction, already fetch next instruction at PC (IP)
+    Instruction instruction = Instruction(this->load32(this->pc));
 
-    // -> execute pending loads, if there are none, load $zero which is NOP
-    if (this->load.registerIndex.index != 0) {
-        std::cout << std::endl << "delayed load: ";
-        this->setRegister(this->load.registerIndex, this->load.value);
-        this->load = {0, 0}; // reset load register
-    }
+    // Increment PC to point to the next instruction. (each is 32 bit)
+    this->current_pc = this->pc;
+    this->pc = this->next_pc;
+    this->next_pc = this->next_pc + 4;
 
-    this->pc = this->pc + 4; // Increment PC to point to the next instruction. (each is 32 bit)
+    // emulate branch delay slot: execute pending loads, if there are none, load $zero which is NOP
+    this->setRegister(this->load.registerIndex, this->load.value);
+    this->load = {0, 0}; // reset load register
 
     // debug
     this->n_instructions++;
+    /*
     std::cout << std::endl << std::dec << "#" << n_instructions << std::endl;
     std::cout << "$12: " << std::hex << this->getRegister({0xa1}) << std::endl;
     std::cout << "$PC: " << std::hex << this->pc << std::endl;
     std::cout << "Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
+    */
 
+    // execute next instrudction
     this->decodeAndExecute(instruction);
-
-    // DEBUG
-    // std::getchar();
 
     // copy to actual registers
     std::copy(std::begin(out_regs), std::end(out_regs), std::begin(regs));
@@ -67,82 +65,63 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         // http://mipsconverter.com/opcodes.html
         // http://problemkaputt.de/psx-spx.htm#cpuspecifications
         case 0b001111:
-            std::cout << "OP_LUI" << std::endl;
             this->OP_LUI(instruction);
             break;
         case 0b001101:
-            std::cout << "OP_ORI" << std::endl;
             this->OP_ORI(instruction);
             break;
         case 0b101011:
-            std::cout << "OP_SW" << std::endl;
             this->OP_SW(instruction);
             break;
         case 0b000000:
-            std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
+            // std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
             switch (instruction.subfunction()) {
                 case 0b001001:
-                    std::cout << "OP_JALR" << std::endl;
                     this->OP_JALR(instruction);
                     break;
                 case 0b000000:
-                    std::cout << "OP_SLL" << std::endl;
                     this->OP_SLL(instruction);
                     break;
                 case 0b100101:
-                    std::cout << "OP_OR" << std::endl;
                     this->OP_OR(instruction);
                     break;
                 case 0b100100:
-                    std::cout << "OP_AND" << std::endl;
                     this->OP_AND(instruction);
                     break;
                 case 0b101011:
-                    std::cout << "OP_SLTU" << std::endl;
                     this->OP_SLTU(instruction);
                     break;
                 case 0b100001:
-                    std::cout << "OP_ADDU" << std::endl;
                     this->OP_ADDU(instruction);
                     break;
                 case 0b100000:
-                    std::cout << "OP_ADD" << std::endl;
                     this->OP_ADD(instruction);
                     break;
                 case 0b001000:
-                    std::cout << "OP_JR" << std::endl;
                     this->OP_JR(instruction);
                     break;
                 case 0b100011:
-                    std::cout << "OP_SUBU" << std::endl;
                     this->OP_SUBU(instruction);
                     break;
                 case 0b000011:
-                    std::cout << "OP_SRA" << std::endl;
                     this->OP_SRA(instruction);
                     break;
                 case 0b011010:
-                    std::cout << "OP_DIV" << std::endl;
                     this->OP_DIV(instruction);
                     break;
                 case 0b011011:
-                    std::cout << "OP_DIVU" << std::endl;
                     this->OP_DIVU(instruction);
                     break;
                 case 0b010010:
-                    std::cout << "OP_MFLO" << std::endl;
                     this->OP_MFLO(instruction);
                     break;
                 case 0b000010:
-                    std::cout << "OP_SRL" << std::endl;
                     this->OP_SRL(instruction);
                     break;
                 case 0b010000:
-                    std::cout << "OP_MFHI" << std::endl;
                     this->OP_MFHI(instruction);
                     break;
                 case 0b101010:
-                    std::cout << "OP_SLT" << std::endl;
                     this->OP_SLT(instruction);
                     break;
                 default:
@@ -151,75 +130,57 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             }
             break;
         case 0b001001:
-            std::cout << "OP_ADDIU" << std::endl;
             this->OP_ADDIU(instruction);
             break;
         case 0b001000:
-            std::cout << "OP_ADDI" << std::endl;
             this->OP_ADDI(instruction);
             break;
         case 0b000010:
-            std::cout << "OP_J" << std::endl;
             this->OP_J(instruction);
             break;
         case 0b000101:
-            std::cout << "OP_BNE" << std::endl;
             this->OP_BNE(instruction);
             break;
         case 0b000111:
-            std::cout << "OP_BGTZ" << std::endl;
             this->OP_BGTZ(instruction);
             break;
         case 0b100011:
-            std::cout << "OP_LW" << std::endl;
             this->OP_LW(instruction);
             break;
         case 0b101001:
-            std::cout << "OP_SH" << std::endl;
             this->OP_SH(instruction);
             break;
         case 0b000011:
-            std::cout << "OP_JAL" << std::endl;
             this->OP_JAL(instruction);
             break;
         case 0b001100:
-            std::cout << "OP_ANDI" << std::endl;
             this->OP_ANDI(instruction);
             break;
         case 0b101000:
-            std::cout << "OP_SB" << std::endl;
             this->OP_SB(instruction);
             break;
         case 0b100000:
-            std::cout << "OP_LB" << std::endl;
             this->OP_LB(instruction);
             break;
         case 0b100100:
-            std::cout << "OP_LBU" << std::endl;
             this->OP_LBU(instruction);
             break;
         case 0b000100:
-            std::cout << "OP_BEQ" << std::endl;
             this->OP_BEQ(instruction);
             break;
         case 0b000110:
-            std::cout << "OP_BLEZ" << std::endl;
             this->OP_BLEZ(instruction);
             break;
         case 0b001010:
-            std::cout << "OP_SLTI" << std::endl;
             this->OP_SLTI(instruction);
             break;
         case 0b001011:
-            std::cout << "OP_SLTIU" << std::endl;
             this->OP_SLTIU(instruction);
             break;
         case 0b000001:
-            std::cout << "OP_BXX: ";
             this->OP_BXX(instruction);
             break;
         case 0b010000:
-            std::cout << "OP_COP0" << std::endl; // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
         default:
@@ -234,7 +195,6 @@ uint32_t Cpu::getRegister(const RegisterIndex &t) {
 
 void Cpu::setRegister(const RegisterIndex &t, const uint32_t &v) {
     this->out_regs[0] = 0; // r0 is always zero
-    std::cout << "Loading (in big endian) " << std::dec << v << " into register " << t.index << std::endl;
     this->out_regs[t.index] = v;
 }
 
@@ -391,14 +351,13 @@ void Cpu::OP_J(const Instruction& instruction) {
     auto immediate = instruction.imm_jump();
 
     // immediate is shifted 2 to the right, because the two LSBs of pc are always zero anyway (due to the 32bit boundary)
-    this->pc = (this->pc & 0xf0000000u) | (immediate << 2u);
-    std::cout << "Jumping to: " << this->pc << std::endl;
+    this->next_pc = (this->next_pc & 0xf0000000u) | (immediate << 2u);
 }
 
 // jump and link
 // jump and store return address in $ra ($31)
 void Cpu::OP_JAL(const Instruction &instruction) {
-    auto ra = this->pc;
+    auto ra = this->next_pc;
 
     // store return in ra
     this->setRegister({ 31 }, ra);
@@ -443,9 +402,8 @@ void Cpu::OP_SLTU(const Instruction& instruction) {
 void Cpu::branch(uint32_t offset) {
     // offset immediates are shifted 2 to the right since PC/IP addresses are aligned to 32bis
     auto off = offset << 2u;
-    std::cout << "branching by " << off << " instead of " << offset << std::endl;
-    this->pc = this->pc + off;
-    this->pc = this->pc - 4; // compensate for the pc += 4 of run_next_instruction
+    this->next_pc = this->next_pc + off;
+    this->next_pc = this->next_pc - 4; // compensate for the pc += 4 of run_next_instruction
 }
 
 // branch (if) not equal
@@ -453,9 +411,6 @@ void Cpu::OP_BNE(const Instruction &instruction) {
     auto immediate = instruction.imm_se();
     auto s = instruction.s();
     auto t = instruction.t();
-    std::cout << immediate << std::endl;
-
-    std::cout << this->getRegister(s) << " != " << this->getRegister(t) << std::endl;
 
     if (this->getRegister(s) != this->getRegister(t)) {
         this->branch(immediate);
@@ -543,9 +498,7 @@ void Cpu::OP_SB(const Instruction &instruction) {
 // set PC to value stored in a register
 void Cpu::OP_JR(const Instruction &instruction) {
     auto s = instruction.s();
-    std::cout << "jumping to addr in reg " << std::dec << s.index << std::endl;
-    std::cout << "new PC: " << std::dec << this->getRegister(s) << std::endl;
-    this->pc = this->getRegister(s);
+    this->next_pc= this->getRegister(s);
 }
 
 uint8_t Cpu::load8(const uint32_t& address) const {
@@ -583,8 +536,8 @@ void Cpu::OP_JALR(const Instruction &instruction) {
     auto s = instruction.s();
     auto d = instruction.d();
 
-    this->setRegister(d, this->pc);
-    this->pc = this->getRegister(s);
+    this->setRegister(d, this->next_pc);
+    this->next_pc = this->getRegister(s);
 }
 
 // move from coprocessor0
@@ -599,8 +552,11 @@ void Cpu::OP_MFC0(const Instruction& instruction) {
             value = this->sr;
             break;
         case 13: // cause register, for exceptions
-            std::cout << "Unhandled_read_from_CAUSE_register:_" << std::dec << value << std::endl;
-            throw std::exception();
+            value = this->cause;
+            break;
+        case 14: // exception PC, store pc on esception
+            value = this->epc;
+            break;
         default:
             std::cout << "STUB:Unhandled_read_from_cop0_register:_" << std::dec << cop_r << std::endl;
     }
@@ -816,4 +772,11 @@ void Cpu::OP_SLT(const Instruction &instruction) {
 
     auto value = ((int32_t) this->getRegister(s)) < ((int32_t) this->getRegister(t));
     this->setRegister(d, (uint32_t) value);
+}
+
+void Cpu::exception(Exception exception) {
+    // exception handler address depends on the BEV bit
+    auto handler = (this->sr & (1u << 22u)) != 0 ? 0xbfc00180 : 0x80000080;
+
+
 }

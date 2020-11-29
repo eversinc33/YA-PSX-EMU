@@ -19,8 +19,6 @@ uint32_t Ram::load32(const uint32_t& offset) const {
 }
 
 void Ram::store32(const uint32_t &offset, const uint32_t &value) {
-    std::cout << std::bitset<32>(value) << std::endl;
-
     auto b0 = value;
     auto b1 = value >> 8u;
     auto b2 = value >> 16u;
