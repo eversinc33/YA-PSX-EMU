@@ -81,6 +81,10 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b000000:
             std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
             switch (instruction.subfunction()) {
+                case 0b001001:
+                    std::cout << "OP_JALR" << std::endl;
+                    this->OP_JALR(instruction);
+                    break;
                 case 0b000000:
                     std::cout << "OP_SLL" << std::endl;
                     this->OP_SLL(instruction);
@@ -130,6 +134,10 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             std::cout << "OP_BNE" << std::endl;
             this->OP_BNE(instruction);
             break;
+        case 0b000111:
+            std::cout << "OP_BGTZ" << std::endl;
+            this->OP_BGTZ(instruction);
+            break;
         case 0b100011:
             std::cout << "OP_LW" << std::endl;
             this->OP_LW(instruction);
@@ -154,9 +162,17 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
             std::cout << "OP_LB" << std::endl;
             this->OP_LB(instruction);
             break;
+        case 0b100100:
+            std::cout << "OP_LBU" << std::endl;
+            this->OP_LBU(instruction);
+            break;
         case 0b000100:
             std::cout << "OP_BEQ" << std::endl;
             this->OP_BEQ(instruction);
+            break;
+        case 0b000110:
+            std::cout << "OP_BLEZ" << std::endl;
+            this->OP_BLEZ(instruction);
             break;
         case 0b010000:
             std::cout << "OP_COP0" << std::endl; // this one is for the coprocessor 0 which handles its own opcodes
@@ -565,4 +581,43 @@ void Cpu::OP_ADD(const Instruction &instruction) {
     }
 
     this->setRegister(d, value);
+}
+
+// branch (if) greater than zero
+void Cpu::OP_BGTZ(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto s = instruction.s();
+
+    auto val = (int32) this->getRegister(s); // sign cast necessary
+
+    if (val > 0) {
+        this->branch(immediate);
+    }
+}
+
+// branch (if) less (or) equal zero
+void Cpu::OP_BLEZ(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto s = instruction.s();
+
+    auto val = (int32) this->getRegister(s); // sign cast necessary
+
+    if (val <= 0) {
+        this->branch(immediate);
+    }
+}
+
+// load byte unsigned
+void Cpu::OP_LBU(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto addr = this->getRegister(s) + immediate;
+
+    // force sign extension by casting
+    auto value = this->load8(addr);
+
+    // put load in the delay slot
+    this->load = { t, (uint32_t) value };
 }

@@ -92,6 +92,12 @@ private:
     uint8_t load8(const uint32_t &address) const;
 
     void OP_ADD(const Instruction &instruction);
+
+    void OP_BGTZ(const Instruction &instruction);
+
+    void OP_BLEZ(const Instruction &instruction);
+
+    void OP_LBU(const Instruction &instruction);
 };
 
 

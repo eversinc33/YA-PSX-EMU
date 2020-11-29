@@ -118,11 +118,13 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         std::cout << "STUB:Unhandled_write_to_RAM_SIZE_register:0x" << std::hex << value << std::endl;
     } else if (CACHE_CONTROL.contains(absAddr)) {
         std::cout << "STUB:Unhandled_write_to_CACHE_CONTROL_register:0x" << std::hex << value << std::endl;
+    } else if (IRQ_CONTROL.contains(absAddr)) {
+        std::cout << "STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value << std::endl;
     } else if (this->ram->range.contains(absAddr)) {
         uint32_t offset = (absAddr - this->ram->range.start);
-        return this->ram->store32(offset, value);
+        this->ram->store32(offset, value);
     } else {
-        std::cout << "No storage peripheral for address " << absAddr << std::endl;
+        std::cout << "unhandled_store32_address_" << std::hex << absAddr << std::endl;
         throw std::exception();
     }
 }
