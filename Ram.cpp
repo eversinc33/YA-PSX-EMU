@@ -4,6 +4,8 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <bitset>
+#include <iostream>
 #include "Ram.h"
 
 // fetch the 32 bit little endian word at offset (offset = offset in ram memory range)
@@ -17,10 +19,17 @@ uint32_t Ram::load32(const uint32_t& offset) const {
 }
 
 void Ram::store32(const uint32_t &offset, const uint32_t &value) {
-    auto b0 = (uint8_t) value;
-    auto b1 = (uint8_t) value >> 8u;
-    auto b2 = (uint8_t) value >> 16u;
-    auto b3 = (uint8_t) value >> 24u;
+    std::cout << std::bitset<32>(value) << std::endl;
+
+    auto b0 = value;
+    auto b1 = value >> 8u;
+    auto b2 = value >> 16u;
+    auto b3 = value >> 24u;
+
+    /*std::cout << std::bitset<8>(b0) << std::endl;
+    std::cout << std::bitset<8>(b1) << std::endl;
+    std::cout << std::bitset<8>(b2) << std::endl;
+    std::cout << std::bitset<8>(b3) << std::endl;*/
 
     this->data[offset + 0] = b0;
     this->data[offset + 1] = b1;

@@ -10,10 +10,10 @@
 
 void Cpu::runNextInstruction() {
 
-    /*if (this->pc % 4 != 0) {
+    if (this->pc % 4 != 0) {
         std::cout << "pc_not_aligned_with_32bit!" << std::endl;
         throw std::exception();
-    }*/
+    }
 
     // emulate branch delay slot:
     // -> execute instruction, already fetch next instruction at PC (IP)
@@ -26,12 +26,12 @@ void Cpu::runNextInstruction() {
 
     // debug
     this->n_instructions++;
-    std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
-    std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;
-    std::cout << "$PC: " << this->pc << std::endl;
+    /*std::cout << std::endl << std::dec << "Instruction " << n_instructions << std::endl;
+    std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;*/
+    std::cout << std::endl << "$PC: " << this->pc << std::endl;
     std::cout << "Next instruction: " << std::hex << instruction.opcode << " | " << std::bitset<8>(instruction.function()) << std::endl;
 
-    this->pc += 4; // Increment PC to point to the next instruction. (each is 32 bit)
+    this->pc = this->pc + 4; // Increment PC to point to the next instruction. (each is 32 bit)
 
     this->decodeAndExecute(instruction);
 
@@ -61,70 +61,91 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         // http://mipsconverter.com/opcodes.html
         // http://problemkaputt.de/psx-spx.htm#cpuspecifications
         case 0b001111:
+            std::cout << "OP_LUI" << std::endl;
             this->OP_LUI(instruction);
             break;
         case 0b001101:
+            std::cout << "OP_ORI" << std::endl;
             this->OP_ORI(instruction);
             break;
         case 0b101011:
+            std::cout << "OP_SW" << std::endl;
             this->OP_SW(instruction);
             break;
         case 0b000000:
             std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
             switch (instruction.subfunction()) {
                 case 0b000000:
+                    std::cout << "OP_SLL" << std::endl;
                     this->OP_SLL(instruction);
                     break;
                 case 0b100101:
+                    std::cout << "OP_OR" << std::endl;
                     this->OP_OR(instruction);
                     break;
                 case 0b101011:
+                    std::cout << "OP_SLTU" << std::endl;
                     this->OP_SLTU(instruction);
                     break;
                 case 0b100001:
+                    std::cout << "OP_ADDU" << std::endl;
                     this->OP_ADDU(instruction);
                     break;
                 case 0b001000:
+                    std::cout << "OP_JR" << std::endl;
                     this->OP_JR(instruction);
                     break;
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     throw std::exception();
             }
+            break;
         case 0b001001:
+            std::cout << "OP_ADDIU" << std::endl;
             this->OP_ADDIU(instruction);
             break;
         case 0b001000:
+            std::cout << "OP_ADDI" << std::endl;
             this->OP_ADDI(instruction);
             break;
         case 0b000010:
+            std::cout << "OP_J" << std::endl;
             this->OP_J(instruction);
             break;
         case 0b000101:
+            std::cout << "OP_BNE" << std::endl;
             this->OP_BNE(instruction);
             break;
         case 0b100011:
+            std::cout << "OP_LW" << std::endl;
             this->OP_LW(instruction);
             break;
         case 0b101001:
+            std::cout << "OP_SH" << std::endl;
             this->OP_SH(instruction);
             break;
         case 0b000011:
+            std::cout << "OP_JAL" << std::endl;
             this->OP_JAL(instruction);
             break;
         case 0b001100:
+            std::cout << "OP_ANDI" << std::endl;
             this->OP_ANDI(instruction);
             break;
         case 0b101000:
+            std::cout << "OP_SB" << std::endl;
             this->OP_SB(instruction);
             break;
         case 0b100000:
+            std::cout << "OP_LB" << std::endl;
             this->OP_LB(instruction);
             break;
         case 0b000100:
+            std::cout << "OP_BEQ" << std::endl;
             this->OP_BEQ(instruction);
             break;
-        case 0b010000: // this one is for the coprocessor 0 which handles its own opcodes
+        case 0b010000:
+            std::cout << "OP_COP0" << std::endl; // this one is for the coprocessor 0 which handles its own opcodes
             this->OP_COP0(instruction);
             break;
         default:
