@@ -27,16 +27,19 @@ void Cpu::runNextInstruction() {
         this->load = {0, 0}; // reset load register
     }
 
-    // debug
-    this->n_instructions++;
-    std::cout << std::endl << std::dec << "#" << n_instructions << " | ";
-    /*std::cout << "$12: " << std::hex << this->getRegister(8) << std::endl;*/
-    std::cout << "$PC: " << this->pc << std::endl;
-    std::cout << "Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
-
     this->pc = this->pc + 4; // Increment PC to point to the next instruction. (each is 32 bit)
 
+    // debug
+    this->n_instructions++;
+    std::cout << std::endl << std::dec << "#" << n_instructions << std::endl;
+    std::cout << "$12: " << std::hex << this->getRegister({0xa1}) << std::endl;
+    std::cout << "$PC: " << std::hex << this->pc << std::endl;
+    std::cout << "Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
+
     this->decodeAndExecute(instruction);
+
+    // DEBUG
+    // std::getchar();
 
     // copy to actual registers
     std::copy(std::begin(out_regs), std::end(out_regs), std::begin(regs));
@@ -292,10 +295,10 @@ bool addOverflow(uint32_t x, uint32_t y, uint32_t &res)
 void Cpu::OP_ADDI(const Instruction& instruction) {
     auto immediate = (int32) instruction.imm_se();
     auto t = instruction.t();
-    auto s = (int32) instruction.s().index;
+    auto s = instruction.s();
 
     uint32_t value;
-    if (addOverflow(s, immediate, value)) {
+    if (addOverflow(((int32) this->getRegister(s)), immediate, value)) {
         std::cout << "ADDI_overflow" << std::endl;
         throw std::exception();
     }
@@ -360,9 +363,9 @@ void Cpu::OP_SLTU(const Instruction& instruction) {
 // branch to immediate value offset
 void Cpu::branch(uint32_t offset) {
     // offset immediates are shifted 2 to the right since PC/IP addresses are aligned to 32bis
-    offset = offset < 2u;
-
-    this->pc = this->pc + offset;
+    auto off = offset << 2u;
+    std::cout << "branching by " << off << " instead of " << offset << std::endl;
+    this->pc = this->pc + off;
     this->pc = this->pc - 4; // compensate for the pc += 4 of run_next_instruction
 }
 
@@ -371,6 +374,9 @@ void Cpu::OP_BNE(const Instruction &instruction) {
     auto immediate = instruction.imm_se();
     auto s = instruction.s();
     auto t = instruction.t();
+    std::cout << immediate << std::endl;
+
+    std::cout << this->getRegister(s) << " != " << this->getRegister(t) << std::endl;
 
     if (this->getRegister(s) != this->getRegister(t)) {
         this->branch(immediate);
