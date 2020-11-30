@@ -10,7 +10,7 @@
 #include <bits/types/FILE.h>
 #include <cstdio>
 #include <fstream>
-#include "Range.h"
+#include "memory/Range.h"
 
 class Bios {
 public:

@@ -7,7 +7,7 @@
 
 
 #include "Bios.h"
-#include "Ram.h"
+#include "memory/Ram.h"
 
 // KUSEG, KSEG etc. all refer to the same address space, so convert them to real addresses,
 // by masking their region bits.

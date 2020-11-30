@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include "Bios.h"
-#include "Interconnect.h"
-#include "Cpu.h"
+#include "core/Bios.h"
+#include "core/cpu/Cpu.h"
+#include "core/memory/Ram.h"
 
 const char* FNAME = "/home/sven/CLionProjects/PSXEMU/SCPH1001.BIN";
 const uint32_t BUFFERSIZE = 512*1024; // 512KB bios size

@@ -3,4 +3,4 @@ project(PSXEMU)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(PSXEMU main.cpp Cpu.cpp Cpu.h Bios.cpp Bios.h Interconnect.cpp Interconnect.h Range.cpp Range.h Instruction.cpp Instruction.h Ram.cpp Ram.h)
+add_executable(PSXEMU main.cpp core/cpu/Cpu.cpp core/cpu/Cpu.h core/Bios.cpp core/Bios.h core/Interconnect.cpp core/Interconnect.h core/memory/Range.cpp core/memory/Range.h core/cpu/Instruction.cpp core/cpu/Instruction.h core/memory/Ram.cpp core/memory/Ram.h)

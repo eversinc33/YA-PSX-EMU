@@ -61,6 +61,15 @@ void Cpu::store32(const uint32_t &address, const uint32_t &value) const {
 
 void Cpu::decodeAndExecute(const Instruction& instruction) {
 
+    if (this->current_pc == 0x80000080) {
+        this->DEBUG = true;
+    }
+    if (this->DEBUG) {
+        std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
+        std::cout << "pc: " << this->current_pc << std::endl;
+        getchar();
+    }
+
     switch(instruction.function()) {
         // http://mipsconverter.com/opcodes.html
         // http://problemkaputt.de/psx-spx.htm#cpuspecifications
@@ -139,6 +148,7 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
+                    std::cout << "pc: " << this->current_pc << std::endl;
                     throw std::exception();
             }
             break;
@@ -426,6 +436,8 @@ void Cpu::OP_BNE(const Instruction &instruction) {
     auto s = instruction.s();
     auto t = instruction.t();
 
+    std::cout << s.index << " " << t.index << std::endl;
+    std::cout << this->getRegister(s) << " != " << this->getRegister(t) << std::endl;
     if (this->getRegister(s) != this->getRegister(t)) {
         this->branch(immediate);
     }
@@ -798,7 +810,7 @@ void Cpu::exception(Exception exception) {
     auto handler = (this->sr & (1u << 22u)) != 0 ? 0xbfc00180 : 0x80000080;
 
     // shift bits 5:0 of the status register (SR) two to the left
-    // by shifting these, the cpu is put into kernel mode
+    // by shifting these, the core is put into kernel mode
     auto mode = this->sr & 0x3fu;
     this->sr &= ~0x3fu;
     this->sr |= (mode << 2u) & 0x3fu;
@@ -812,6 +824,7 @@ void Cpu::exception(Exception exception) {
     // no branch delay in exceptions!
     this->pc = handler;
     this->next_pc = this->pc + 4;
+    std::cout << this->pc << std::endl;
 }
 
 void Cpu::OP_SYSCALL(const Instruction& instruction) {

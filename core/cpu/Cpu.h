@@ -6,7 +6,7 @@
 #define PSXEMU_CPU_H
 
 #include <cstdint>
-#include "Interconnect.h"
+#include "../Interconnect.h"
 #include "Instruction.h"
 
 struct LoadRegister {
@@ -124,6 +124,8 @@ private:
     void OP_NOR(const Instruction &instruction);
 
     void OP_RFE(const Instruction &instruction);
+
+    bool DEBUG = false;
 };
 
 
