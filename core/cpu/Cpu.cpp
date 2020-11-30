@@ -62,7 +62,7 @@ void Cpu::store32(const uint32_t &address, const uint32_t &value) const {
 void Cpu::decodeAndExecute(const Instruction& instruction) {
 
     if (this->current_pc == 0x80000080) {
-        this->DEBUG = true;
+        //this->DEBUG = true;
     }
     if (this->DEBUG) {
         std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
@@ -136,7 +136,7 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b001100:
                     this->OP_SYSCALL(instruction);
                     break;
-                /*case 0b010011:
+                case 0b010011:
                     this->OP_MTLO(instruction);
                     break;
                 case 0b010001:
@@ -144,7 +144,7 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                     break;
                 case 0b100111:
                     this->OP_NOR(instruction);
-                    break;*/
+                    break;
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
@@ -463,9 +463,9 @@ void Cpu::OP_COP0(const Instruction &instruction) {
         case 0b00000:
             this->OP_MFC0(instruction);
             break;
-        /*case 0b010000:
+        case 0b010000:
             this->OP_RFE(instruction);
-            break;*/
+            break;
         default:
             std::cout << "Unhandled opcode " << std::hex << instruction.opcode << std::endl;
             std::cout << "Unhandled opcode for CoProcessor" << std::bitset<8>(instruction.cop_opcode()) << std::endl;
@@ -816,7 +816,7 @@ void Cpu::exception(Exception exception) {
     this->sr |= (mode << 2u) & 0x3fu;
 
     // update cause register with bits 6:2 (the exception code)
-    this->cause = ((uint32_t) cause) << 2u;
+    this->cause = ((uint32_t) exception) << 2u;
 
     // save current instruction address in EPC
     this->epc = this->current_pc;
