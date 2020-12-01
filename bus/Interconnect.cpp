@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "Interconnect.h"
+#include "../memory/MemoryMap.h"
 
 // Load 32 bit from the appropriate peripehral, by checking
 // if it is in range of the memory and calculating the offset
