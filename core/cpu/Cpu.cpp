@@ -11,12 +11,15 @@
 void Cpu::runNextInstruction() {
 
     if (this->pc % 4 != 0) {
-        std::cout << "pc_not_aligned_with_32bit!" << std::endl;
-        throw std::exception();
+        return this->exception(LoadAddressError);
     }
 
     // emulate branch delay slot: execute instruction, already fetch next instruction at PC (IP)
     Instruction instruction = Instruction(this->load32(this->pc));
+
+    // if the last instruction was a branch, were in the delay slot
+    this->inDelaySlot = this->branching;
+    this->branching = false;
 
     // Increment PC to point to the next instruction. (each is 32 bit)
     this->current_pc = this->pc;
@@ -259,8 +262,13 @@ void Cpu::OP_SH(const Instruction &instruction) {
     auto s = instruction.s();
 
     auto address = this->getRegister(s) + immediate;
-    auto value = this->getRegister(t);
 
+    // check alignment
+    if (address %  2 != 0) {
+        return exception(LoadAddressError);
+    }
+
+    auto value = this->getRegister(t);
     this->store16(address, (uint16_t) value);
 }
 
@@ -279,8 +287,13 @@ void Cpu::OP_SW(const Instruction& instruction) {
     auto s = instruction.s();
 
     auto address = this->getRegister(s) + immediate;
-    auto value = this->getRegister(t);
 
+    // check alignment
+    if (address %  4 != 0) {
+        return exception(LoadAddressError);
+    }
+
+    auto value = this->getRegister(t);
     this->store32(address, value);
 }
 
@@ -298,6 +311,11 @@ void Cpu::OP_LW(const Instruction &instruction) {
     auto s = instruction.s();
 
     auto address = this->getRegister(s) + immediate;
+
+    // check alignment
+    if (address %  4 != 0) {
+        return exception(LoadAddressError);
+    }
 
     auto value = this->load32(address);
 
@@ -351,8 +369,7 @@ void Cpu::OP_ADDI(const Instruction& instruction) {
 
     uint32_t value;
     if (addOverflow(((int32) this->getRegister(s)), immediate, value)) {
-        std::cout << "ADDI_overflow" << std::endl;
-        throw std::exception();
+        return this->exception(Overflow);
     }
     this->setRegister(t, value);
 }
@@ -373,6 +390,7 @@ void Cpu::OP_ADDU(const Instruction &instruction) {
 // set PC (instruction pointer) to address in immediate
 void Cpu::OP_J(const Instruction& instruction) {
     auto immediate = instruction.imm_jump();
+    this->branching = true;
 
     // immediate is shifted 2 to the right, because the two LSBs of pc are always zero anyway (due to the 32bit boundary)
     this->next_pc = (this->next_pc & 0xf0000000u) | (immediate << 2u);
@@ -382,6 +400,7 @@ void Cpu::OP_J(const Instruction& instruction) {
 // jump and store return address in $ra ($31)
 void Cpu::OP_JAL(const Instruction &instruction) {
     auto ra = this->next_pc;
+    this->branching = true;
 
     // store return in ra
     this->setRegister({ 31 }, ra);
@@ -426,6 +445,9 @@ void Cpu::OP_SLTU(const Instruction& instruction) {
 void Cpu::branch(uint32_t offset) {
     // offset immediates are shifted 2 to the right since PC/IP addresses are aligned to 32bis
     auto off = offset << 2u;
+
+    this->branching = true;
+
     this->next_pc = this->next_pc + off;
     this->next_pc = this->next_pc - 4; // compensate for the pc += 4 of run_next_instruction
 }
@@ -436,8 +458,6 @@ void Cpu::OP_BNE(const Instruction &instruction) {
     auto s = instruction.s();
     auto t = instruction.t();
 
-    std::cout << s.index << " " << t.index << std::endl;
-    std::cout << this->getRegister(s) << " != " << this->getRegister(t) << std::endl;
     if (this->getRegister(s) != this->getRegister(t)) {
         this->branch(immediate);
     }
@@ -528,6 +548,8 @@ void Cpu::OP_SB(const Instruction &instruction) {
 // set PC to value stored in a register
 void Cpu::OP_JR(const Instruction &instruction) {
     auto s = instruction.s();
+    this->branching = true;
+
     this->next_pc= this->getRegister(s);
 }
 
@@ -565,6 +587,7 @@ void Cpu::OP_BEQ(const Instruction &instruction) {
 void Cpu::OP_JALR(const Instruction &instruction) {
     auto s = instruction.s();
     auto d = instruction.d();
+    this->branching = true;
 
     this->setRegister(d, this->next_pc);
     this->next_pc = this->getRegister(s);
@@ -607,8 +630,7 @@ void Cpu::OP_ADD(const Instruction &instruction) {
 
     uint32_t value;
     if (addOverflow(s_add, t_add, value)) {
-        std::cout << "ADD_overflow" << std::endl;
-        throw std::exception();
+        return this->exception(Overflow);
     }
 
     this->setRegister(d, value);
@@ -821,10 +843,16 @@ void Cpu::exception(Exception exception) {
     // save current instruction address in EPC
     this->epc = this->current_pc;
 
+    // special case, if the exception occurs in the dela slot
+    if (this->inDelaySlot) {
+        this->epc = this->epc - 4;
+        // also set bit 31 of cause register
+        this->cause |= 1u << 31u;
+    }
+
     // no branch delay in exceptions!
     this->pc = handler;
     this->next_pc = this->pc + 4;
-    std::cout << this->pc << std::endl;
 }
 
 void Cpu::OP_SYSCALL(const Instruction& instruction) {

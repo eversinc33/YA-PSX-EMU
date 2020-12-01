@@ -90,6 +90,10 @@ void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
         std::cout << "STUB:Unhandled_write_to_TIMER_register:0x" << std::hex << value << std::endl;
         return;
     }
+    if (this->ram->range.contains(absAddr)) {
+        uint32_t offset = (absAddr - this->ram->range.start);
+        return this->ram->store16(offset, value);
+    }
 
     std::cout << "unhandled_store16_address_" << std::hex << absAddr << std::endl;
     throw std::exception();

@@ -16,6 +16,9 @@ struct LoadRegister {
 
 enum Exception {
     SysCall = 0x8, // caused by syscall opcode
+    Overflow = 0xc, // overflow on addi/add
+    LoadAddressError = 0x4, // if not 32 bit aligned
+    StoreAddressError = 0x5,
 };
 
 class Cpu {
@@ -105,6 +108,9 @@ private:
     // custom registers
     uint32_t out_regs[32] = {}; // second set of registers to emulate the load delay slot accurately. contain output of the curren instruction
     LoadRegister load; // load initiated by the current instruction
+    // flags
+    bool branching; // if a branch occures, this is set to true
+    bool inDelaySlot; // if the current instruction is in the delay slot
     // get and set
     uint32_t getRegister(const RegisterIndex& t);
     void setRegister(const RegisterIndex& t, const uint32_t& v);
