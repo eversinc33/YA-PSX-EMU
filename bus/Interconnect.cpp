@@ -28,9 +28,17 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         std::cout << "STUB:IRQ_control_read:_0x" << std::hex << absAddr << std::endl;
         return 0; // we do not have interrupts for now so just return 0
     }
-    if (DMA.contains(absAddr)) {
-        std::cout << "STUB:DMA_read:_0x" << std::hex << absAddr << std::endl;
-        return 0;
+    if (this->dma->range.contains(absAddr)) {
+        uint32_t offset = (absAddr - this->dma->range.start);
+        switch(offset) {
+            case 0x70:
+                return this->dma->control;
+            case 0x74:
+                return this->dma->getInterrupt();
+            default:
+                std::cout << "STUB:unhandled_DMA_read:_0x" << std::hex << absAddr << std::endl;
+                throw std::exception();
+        }
     }
     if (GPU.contains(absAddr)) {
         uint32_t offset = (absAddr - GPU.start);
@@ -179,9 +187,17 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         std::cout << "STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value << std::endl;
         return;
     }
-    if (DMA.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr << std::endl;
-        return;
+    if (this->dma->range.contains(absAddr)) {
+        uint32_t offset = (absAddr - this->dma->range.start);
+        switch(offset) {
+            case 0x70:
+                return this->dma->setControl(value);
+            case 0x74:
+                return this->dma->setInterrupt(value);
+            default:
+                std::cout << "STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr << std::endl;
+                return;
+        }
     }
     if (GPU.contains(absAddr)) {
         std::cout << "STUB:Unhandled_write_to_GPU_register:0x" << std::hex << absAddr << std::endl;

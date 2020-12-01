@@ -8,6 +8,7 @@
 
 #include "../bios/Bios.h"
 #include "../memory/Ram.h"
+#include "../memory/Dma.h"
 
 // KUSEG, KSEG etc. all refer to the same address space, so convert them to real addresses,
 // by masking their region bits.
@@ -27,10 +28,12 @@ class Interconnect {
 public:
     Bios* bios;
     Ram *ram;
+    Dma *dma;
 
-    Interconnect(Bios* bios, Ram* ram) {
+    Interconnect(Bios* bios, Ram* ram, Dma* dma) {
         this->bios = bios;
         this->ram = ram;
+        this->dma = dma;
     };
 
     uint32_t load32(const uint32_t& address);
