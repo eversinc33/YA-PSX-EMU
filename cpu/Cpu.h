@@ -19,6 +19,8 @@ enum Exception {
     Overflow = 0xc, // overflow on addi/add
     LoadAddressError = 0x4, // if not 32 bit aligned
     StoreAddressError = 0x5,
+    Break = 0x9,
+    CoprocessorError = 0xb,
 };
 
 class Cpu {
@@ -142,6 +144,24 @@ private:
     void OP_LH(const Instruction &instruction);
 
     void OP_XOR(const Instruction &instruction);
+
+    void OP_SUB(const Instruction &instruction);
+
+    void OP_MULT(const Instruction &instruction);
+
+    void OP_BREAK(const Instruction &instruction);
+
+    void OP_XORI(const Instruction &instruction);
+
+    void OP_COP3(const Instruction &instruction);
+
+    void OP_COP1(const Instruction &instruction);
+
+    void OP_COP2(const Instruction &instruction);
+
+    void OP_LWL(const Instruction &instruction);
+
+    void OP_LWR(const Instruction &instruction);
 };
 
 
