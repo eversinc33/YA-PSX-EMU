@@ -6,8 +6,8 @@
 #define PSXEMU_INTERCONNECT_H
 
 
-#include "Bios.h"
-#include "memory/Ram.h"
+#include "../bios/Bios.h"
+#include "../memory/Ram.h"
 
 // KUSEG, KSEG etc. all refer to the same address space, so convert them to real addresses,
 // by masking their region bits.

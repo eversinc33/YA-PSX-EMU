@@ -1,5 +1,5 @@
-#include <stdint.h>
-#include "Bios.h"
+#include <cstdint>
+#include "bios/Bios.h"
 #include "cpu/Cpu.h"
 #include "memory/Ram.h"
 

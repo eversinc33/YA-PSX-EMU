@@ -6,7 +6,7 @@
 #define PSXEMU_CPU_H
 
 #include <cstdint>
-#include "../Interconnect.h"
+#include "../bus/Interconnect.h"
 #include "Instruction.h"
 
 struct LoadRegister {
