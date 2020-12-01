@@ -167,6 +167,8 @@ private:
     void OP_SRLV(const Instruction &instruction);
 
     void OP_SRAV(const Instruction &instruction);
+
+    void OP_MULTU(const Instruction &instruction);
 };
 
 

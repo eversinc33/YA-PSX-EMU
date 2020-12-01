@@ -752,6 +752,20 @@ void Cpu::OP_MULT(const Instruction &instruction) {
     this->lo = (uint32_t) value;
 }
 
+// multiply (unsigned)
+void Cpu::OP_MULTU(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+
+    auto a = (uint64_t) this->getRegister(s);
+    auto b = (uint64_t) this->getRegister(t);
+
+    auto value = a * b;
+
+    this->hi = (uint32_t) (value >> 32u);
+    this->lo = (uint32_t) value;
+}
+
 // coprocessor 1 opcode does not exist on the playstation
 void Cpu::OP_COP1(const Instruction &instruction) {
     this->exception(CoprocessorError);

@@ -80,213 +80,78 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         // http://mipsconverter.com/opcodes.html
         // http://problemkaputt.de/psx-spx.htm#cpuspecifications
         case 0b000000:
-            // std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
             switch (instruction.subfunction()) {
-                case 0b001001:
-                    this->OP_JALR(instruction);
-                    break;
-                case 0b000000:
-                    this->OP_SLL(instruction);
-                    break;
-                case 0b100101:
-                    this->OP_OR(instruction);
-                    break;
-                case 0b100100:
-                    this->OP_AND(instruction);
-                    break;
-                case 0b101011:
-                    this->OP_SLTU(instruction);
-                    break;
-                case 0b100001:
-                    this->OP_ADDU(instruction);
-                    break;
-                case 0b100000:
-                    this->OP_ADD(instruction);
-                    break;
-                case 0b001000:
-                    this->OP_JR(instruction);
-                    break;
-                case 0b100011:
-                    this->OP_SUBU(instruction);
-                    break;
-                case 0b000011:
-                    this->OP_SRA(instruction);
-                    break;
-                case 0b011010:
-                    this->OP_DIV(instruction);
-                    break;
-                case 0b011011:
-                    this->OP_DIVU(instruction);
-                    break;
-                case 0b010010:
-                    this->OP_MFLO(instruction);
-                    break;
-                case 0b000010:
-                    this->OP_SRL(instruction);
-                    break;
-                case 0b010000:
-                    this->OP_MFHI(instruction);
-                    break;
-                case 0b101010:
-                    this->OP_SLT(instruction);
-                    break;
-                case 0b001100:
-                    this->OP_SYSCALL(instruction);
-                    break;
-                case 0b010011:
-                    this->OP_MTLO(instruction);
-                    break;
-                case 0b010001:
-                    this->OP_MTHI(instruction);
-                    break;
-                case 0b100111:
-                    this->OP_NOR(instruction);
-                    break;
-                case 0b000100:
-                    this->OP_SLLV(instruction);
-                    break;
-                case 0b000110:
-                    this->OP_SRLV(instruction);
-                    break;
-                case 0b000111:
-                    this->OP_SRAV(instruction);
-                    break;
-                case 0b100110:
-                    this->OP_XOR(instruction);
-                    break;
-                case 0b011000:
-                    this->OP_MULT(instruction);
-                    break;
-                case 0b001101:
-                    this->OP_BREAK(instruction);
-                    break;
-                default:
-                    std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
-                    std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
-                    std::cout << "pc: " << this->current_pc << std::endl;
-                    throw std::exception();
+                case 0b000000: this->OP_SLL(instruction); break;
+                case 0b000010: this->OP_SRL(instruction); break;
+                case 0b000011: this->OP_SRA(instruction); break;
+                case 0b000100: this->OP_SLLV(instruction); break;
+                case 0b000110: this->OP_SRLV(instruction); break;
+                case 0b000111: this->OP_SRAV(instruction); break;
+                case 0b001000: this->OP_JR(instruction); break;
+                case 0b001001: this->OP_JALR(instruction); break;
+                case 0b001100: this->OP_SYSCALL(instruction); break;
+                case 0b001101: this->OP_BREAK(instruction); break;
+                case 0b010000: this->OP_MFHI(instruction); break;
+                case 0b010001: this->OP_MTHI(instruction); break;
+                case 0b010010: this->OP_MFLO(instruction); break;
+                case 0b010011: this->OP_MTLO(instruction); break;
+                case 0b011000: this->OP_MULT(instruction); break;
+                case 0b011001: this->OP_MULTU(instruction); break;
+                case 0b011010: this->OP_DIV(instruction); break;
+                case 0b011011: this->OP_DIVU(instruction); break;
+                case 0b100000: this->OP_ADD(instruction); break;
+                case 0b100001: this->OP_ADDU(instruction); break;
+                case 0b100010: this->OP_SUB(instruction); break;
+                case 0b100011: this->OP_SUBU(instruction); break;
+                case 0b100100: this->OP_AND(instruction); break;
+                case 0b100101: this->OP_OR(instruction); break;
+                case 0b100110: this->OP_XOR(instruction); break;
+                case 0b100111: this->OP_NOR(instruction); break;
+                case 0b101010: this->OP_SLT(instruction); break;
+                case 0b101011: this->OP_SLTU(instruction); break;
+                default: this->OP_ILLEGAL(instruction);
             }
             break;
-        case 0b001111:
-            this->OP_LUI(instruction);
-            break;
-        case 0b001101:
-            this->OP_ORI(instruction);
-            break;
-        case 0b101011:
-            this->OP_SW(instruction);
-            break;
-        case 0b001001:
-            this->OP_ADDIU(instruction);
-            break;
-        case 0b001000:
-            this->OP_ADDI(instruction);
-            break;
-        case 0b000010:
-            this->OP_J(instruction);
-            break;
-        case 0b000101:
-            this->OP_BNE(instruction);
-            break;
-        case 0b000111:
-            this->OP_BGTZ(instruction);
-            break;
-        case 0b100011:
-            this->OP_LW(instruction);
-            break;
-        case 0b101001:
-            this->OP_SH(instruction);
-            break;
-        case 0b000011:
-            this->OP_JAL(instruction);
-            break;
-        case 0b001100:
-            this->OP_ANDI(instruction);
-            break;
-        case 0b101000:
-            this->OP_SB(instruction);
-            break;
-        case 0b100000:
-            this->OP_LB(instruction);
-            break;
-        case 0b100100:
-            this->OP_LBU(instruction);
-            break;
-        case 0b000100:
-            this->OP_BEQ(instruction);
-            break;
-        case 0b000110:
-            this->OP_BLEZ(instruction);
-            break;
-        case 0b001010:
-            this->OP_SLTI(instruction);
-            break;
-        case 0b001011:
-            this->OP_SLTIU(instruction);
-            break;
-        case 0b100101:
-            this->OP_LHU(instruction);
-            break;
-        case 0b100001:
-            this->OP_LH(instruction);
-            break;
-        case 0b111011:
-            this->OP_SWC3(instruction);
-            break;
-        case 0b111010:
-            this->OP_SWC2(instruction);
-            break;
-        case 0b111001:
-            this->OP_SWC1(instruction);
-            break;
-        case 0b111000:
-            this->OP_SWC0(instruction);
-            break;
-        case 0b110011:
-            this->OP_LWC3(instruction);
-            break;
-        case 0b110010:
-            this->OP_LWC2(instruction);
-            break;
-        case 0b110001:
-            this->OP_LWC1(instruction);
-            break;
-        case 0b110000:
-            this->OP_LWC0(instruction);
-            break;
-        case 0b101110:
-            this->OP_SWR(instruction);
-            break;
-        case 0b101010:
-            this->OP_SWL(instruction);
-            break;
-        case 0b100110:
-            this->OP_LWR(instruction);
-            break;
-        case 0b100010:
-            this->OP_LWL(instruction);
-            break;
-        case 0b001110:
-            this->OP_XORI(instruction);
-            break;
-        // special cases
-        case 0b000001:
-            this->OP_BXX(instruction);
-            break;
-        case 0b010000:
-            this->OP_COP0(instruction);
-            break;
-        case 0b010001:
-            this->OP_COP1(instruction);
-            break;
-        case 0b010010:
-            this->OP_COP2(instruction);
-            break;
-        case 0b010011:
-            this->OP_COP3(instruction);
-            break;
-        default:
-            this->OP_ILLEGAL(instruction);
+        case 0b000001: this->OP_BXX(instruction); break;
+        case 0b000010: this->OP_J(instruction); break;
+        case 0b000011: this->OP_JAL(instruction); break;
+        case 0b000100: this->OP_BEQ(instruction); break;
+        case 0b000101: this->OP_BNE(instruction); break;
+        case 0b000110: this->OP_BLEZ(instruction); break;
+        case 0b000111: this->OP_BGTZ(instruction); break;
+        case 0b001000: this->OP_ADDI(instruction); break;
+        case 0b001001: this->OP_ADDIU(instruction); break;
+        case 0b001010: this->OP_SLTI(instruction); break;
+        case 0b001011: this->OP_SLTIU(instruction); break;
+        case 0b001100: this->OP_ANDI(instruction); break;
+        case 0b001101: this->OP_ORI(instruction); break;
+        case 0b001110: this->OP_XORI(instruction); break;
+        case 0b001111: this->OP_LUI(instruction); break;
+        case 0b010000: this->OP_COP0(instruction); break;
+        case 0b010001: this->OP_COP1(instruction); break;
+        case 0b010010: this->OP_COP2(instruction); break;
+        case 0b010011: this->OP_COP3(instruction); break;
+        case 0b100000: this->OP_LB(instruction); break;
+        case 0b100001: this->OP_LH(instruction); break;
+        case 0b100010: this->OP_LWL(instruction); break;
+        case 0b100011: this->OP_LW(instruction); break;
+        case 0b100100: this->OP_LBU(instruction); break;
+        case 0b100101: this->OP_LHU(instruction); break;
+        case 0b100110: this->OP_LWR(instruction); break;
+        case 0b101000: this->OP_SB(instruction); break;
+        case 0b101001: this->OP_SH(instruction); break;
+        case 0b101010: this->OP_SWL(instruction); break;
+        case 0b101011: this->OP_SW(instruction); break;
+        case 0b101110: this->OP_SWR(instruction); break;
+        case 0b110000: this->OP_LWC0(instruction); break;
+        case 0b110001: this->OP_LWC1(instruction); break;
+        case 0b110010: this->OP_LWC2(instruction); break;
+        case 0b110011: this->OP_LWC3(instruction); break;
+        case 0b111000: this->OP_SWC0(instruction); break;
+        case 0b111001: this->OP_SWC1(instruction); break;
+        case 0b111010: this->OP_SWC2(instruction); break;
+        case 0b111011: this->OP_SWC3(instruction); break;
+        default: this->OP_ILLEGAL(instruction);
     }
 }
 
