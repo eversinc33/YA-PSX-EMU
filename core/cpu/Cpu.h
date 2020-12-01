@@ -132,6 +132,16 @@ private:
     void OP_RFE(const Instruction &instruction);
 
     bool DEBUG = false;
+
+    void OP_LHU(const Instruction &instruction);
+
+    uint16_t load16(uint32_t address) const;
+
+    void OP_SLLV(const Instruction &instruction);
+
+    void OP_LH(const Instruction &instruction);
+
+    void OP_XOR(const Instruction &instruction);
 };
 
 

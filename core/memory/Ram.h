@@ -32,6 +32,8 @@ public:
     void store8(const uint32_t &offset, const uint8_t &value);
 
     void store16(const uint32_t &offset, const uint8_t &value);
+
+    uint16_t load16(const uint32_t &offset);
 };
 
 

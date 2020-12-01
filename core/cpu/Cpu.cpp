@@ -46,6 +46,10 @@ void Cpu::runNextInstruction() {
     std::copy(std::begin(out_regs), std::end(out_regs), std::begin(regs));
 }
 
+uint16_t Cpu::load16(uint32_t address) const {
+    return this->interconnect->load16(address);
+}
+
 uint32_t Cpu::load32(const uint32_t& address) const {
     return this->interconnect->load32(address);
 }
@@ -148,6 +152,12 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b100111:
                     this->OP_NOR(instruction);
                     break;
+                case 0b000100:
+                    this->OP_SLLV(instruction);
+                    break;
+                case 0b100110:
+                    this->OP_XOR(instruction);
+                    break;
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
                     std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
@@ -203,6 +213,13 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b001011:
             this->OP_SLTIU(instruction);
             break;
+        case 0b100101:
+            this->OP_LHU(instruction);
+            break;
+        case 0b100001:
+            this->OP_LH(instruction);
+            break;
+        // special cases
         case 0b000001:
             this->OP_BXX(instruction);
             break;
@@ -668,7 +685,6 @@ void Cpu::OP_LBU(const Instruction &instruction) {
 
     auto addr = this->getRegister(s) + immediate;
 
-    // force sign extension by casting
     auto value = this->load8(addr);
 
     // put load in the delay slot
@@ -892,4 +908,57 @@ void Cpu::OP_RFE(const Instruction &instruction) {
     auto mode = this->sr & 0x3fu;
     this->sr &= ~0x3fu;
     this->sr |= mode >> 2u;
+}
+
+// load halfword unsigned
+void Cpu::OP_LHU(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto addr = this->getRegister(s) + immediate;
+
+    if (addr % 2 != 0) {
+        return this->exception(LoadAddressError);
+    }
+
+    auto value = this->load16(addr);
+    // put load in the delay slot
+    this->load = { t, (uint32_t) value };
+}
+
+// shift left logical variable
+void Cpu::OP_SLLV(const Instruction &instruction) {
+    auto t = instruction.t();
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    // shift amount is truncated to lower 5 bits
+    auto value = this->getRegister(t) << (this->getRegister(s) & 0x1fu);
+
+    this->setRegister(d, value);
+}
+
+// load halfword
+void Cpu::OP_LH(const Instruction &instruction) {
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto addr = this->getRegister(s) + immediate;
+
+    // force sign extension by casting
+    auto value = (int16_t) this->load16(addr);
+    // put load in the delay slot
+    this->load = { t, (uint32_t) value };
+}
+
+// exclusive or
+void Cpu::OP_XOR(const Instruction &instruction) {
+    auto s = instruction.s();
+    auto t = instruction.t();
+    auto d = instruction.d();
+
+    auto value = this->getRegister(s) ^ this->getRegister(t);
+    this->setRegister(d, value);
 }

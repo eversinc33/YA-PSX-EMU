@@ -50,3 +50,10 @@ void Ram::store16(const uint32_t &offset, const uint8_t &value) {
     this->data[offset + 0] = b0;
     this->data[offset + 1] = b1;
 }
+
+uint16_t Ram::load16(const uint32_t& offset) {
+    auto b0 = (uint16_t) this->data[offset + 0];
+    auto b1 = (uint16_t) this->data[offset + 1];
+
+    return b0 | (uint16_t) (b1 << 8u);
+}

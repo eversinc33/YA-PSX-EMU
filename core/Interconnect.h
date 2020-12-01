@@ -31,7 +31,9 @@ const Range SPU = Range(0x1f801c00, 640);
 const Range EXPANSION_1 = Range(0x1f000000, 512 * 1024);
 const Range EXPANSION_2 = Range(0x1f802000, 66);
 const Range IRQ_CONTROL = Range(0x1f801070, 8); // interrupt control registers (status and mask)
+const Range DMA = Range(0x1f801080,0x80); // dma, direct memory access
 const Range TIMERS = Range(0x1f801100,48); // the playstation has three independent timers at these regsters
+const Range GPU = Range(0x1f801810, 8);
 
 class Interconnect {
 public:
@@ -49,6 +51,8 @@ public:
     void store8(const uint32_t &address, const uint8_t &value);
 
     uint8_t load8(const uint32_t& address);
+
+    uint16_t load16(uint32_t address);
 
 private:
     uint32_t maskRegion(const uint32_t& address);
