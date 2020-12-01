@@ -79,15 +79,6 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
     switch(instruction.function()) {
         // http://mipsconverter.com/opcodes.html
         // http://problemkaputt.de/psx-spx.htm#cpuspecifications
-        case 0b001111:
-            this->OP_LUI(instruction);
-            break;
-        case 0b001101:
-            this->OP_ORI(instruction);
-            break;
-        case 0b101011:
-            this->OP_SW(instruction);
-            break;
         case 0b000000:
             // std::cout << "000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
             switch (instruction.subfunction()) {
@@ -154,8 +145,20 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                 case 0b000100:
                     this->OP_SLLV(instruction);
                     break;
+                case 0b000110:
+                    this->OP_SRLV(instruction);
+                    break;
+                case 0b000111:
+                    this->OP_SRAV(instruction);
+                    break;
                 case 0b100110:
                     this->OP_XOR(instruction);
+                    break;
+                case 0b011000:
+                    this->OP_MULT(instruction);
+                    break;
+                case 0b001101:
+                    this->OP_BREAK(instruction);
                     break;
                 default:
                     std::cout << "Unhandled_000000_opcode:" << std::bitset<8>(instruction.subfunction()) << std::endl;
@@ -163,6 +166,15 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
                     std::cout << "pc: " << this->current_pc << std::endl;
                     throw std::exception();
             }
+            break;
+        case 0b001111:
+            this->OP_LUI(instruction);
+            break;
+        case 0b001101:
+            this->OP_ORI(instruction);
+            break;
+        case 0b101011:
+            this->OP_SW(instruction);
             break;
         case 0b001001:
             this->OP_ADDIU(instruction);
@@ -218,6 +230,45 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b100001:
             this->OP_LH(instruction);
             break;
+        case 0b111011:
+            this->OP_SWC3(instruction);
+            break;
+        case 0b111010:
+            this->OP_SWC2(instruction);
+            break;
+        case 0b111001:
+            this->OP_SWC1(instruction);
+            break;
+        case 0b111000:
+            this->OP_SWC0(instruction);
+            break;
+        case 0b110011:
+            this->OP_LWC3(instruction);
+            break;
+        case 0b110010:
+            this->OP_LWC2(instruction);
+            break;
+        case 0b110001:
+            this->OP_LWC1(instruction);
+            break;
+        case 0b110000:
+            this->OP_LWC0(instruction);
+            break;
+        case 0b101110:
+            this->OP_SWR(instruction);
+            break;
+        case 0b101010:
+            this->OP_SWL(instruction);
+            break;
+        case 0b100110:
+            this->OP_LWR(instruction);
+            break;
+        case 0b100010:
+            this->OP_LWL(instruction);
+            break;
+        case 0b001110:
+            this->OP_XORI(instruction);
+            break;
         // special cases
         case 0b000001:
             this->OP_BXX(instruction);
@@ -225,10 +276,17 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         case 0b010000:
             this->OP_COP0(instruction);
             break;
+        case 0b010001:
+            this->OP_COP1(instruction);
+            break;
+        case 0b010010:
+            this->OP_COP2(instruction);
+            break;
+        case 0b010011:
+            this->OP_COP3(instruction);
+            break;
         default:
-            std::cout << "Unhandled instruction" << std::endl;
-            std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
-            throw std::exception();
+            this->OP_ILLEGAL(instruction);
     }
 }
 

@@ -831,3 +831,123 @@ void Cpu::OP_LWR(const Instruction &instruction) {
 
     this->load = {t, value};
 }
+
+// store word left
+void Cpu::OP_SWL(const Instruction& instruction)  {
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto addr = this->getRegister(s) + immediate;
+    auto value = this->getRegister(t);
+
+    auto alignedAddr = addr & ~3u;
+    auto curMem = this->load32(alignedAddr);
+
+    uint32_t mem;
+    switch(addr & 3u) {
+        case 0:
+            mem = (curMem & 0xffffff00u) | (value >> 24u); break;
+        case 1:
+            mem = (curMem & 0xffff0000u) | (value >> 16u); break;
+        case 2:
+            mem = (curMem & 0xff000000u) | (value >> 8u); break;
+        case 3:
+            mem = (curMem & 0x00000000u) | (value >> 0u); break;
+    }
+
+    this->store32(alignedAddr, mem);
+}
+
+// store word right
+void Cpu::OP_SWR(const Instruction& instruction)  {
+    auto immediate = instruction.imm_se();
+    auto t = instruction.t();
+    auto s = instruction.s();
+
+    auto addr = this->getRegister(s) + immediate;
+    auto value = this->getRegister(t);
+
+    auto alignedAddr = addr & ~3u;
+    auto curMem = this->load32(alignedAddr);
+
+    uint32_t mem;
+    switch(addr & 3u) {
+        case 0:
+            mem = (curMem & 0x00000000u) | (value << 0u); break;
+        case 1:
+            mem = (curMem & 0x000000ffu) | (value << 8u); break;
+        case 2:
+            mem = (curMem & 0x0000ffffu) | (value << 16u); break;
+        case 3:
+            mem = (curMem & 0x00ffffffu) | (value << 24u); break;
+    }
+
+    this->store32(alignedAddr, mem);
+}
+
+// load word coprocessor n
+void Cpu::OP_LWC0(const Instruction& instruction) {
+    // not supported by c0
+    this->exception(CoprocessorError);
+}
+void Cpu::OP_LWC1(const Instruction& instruction) {
+    // not supported by c1
+    this->exception(CoprocessorError);
+}
+void Cpu::OP_LWC2(const Instruction& instruction) {
+    std::cout << "Unhandled_GTE_LWC_instruction:_0x" << std::hex << instruction.opcode << std::endl;
+    throw std::exception();
+}
+void Cpu::OP_LWC3(const Instruction& instruction) {
+    // not supported by c3
+    this->exception(CoprocessorError);
+}
+
+// store word coprocessor n
+void Cpu::OP_SWC0(const Instruction& instruction) {
+    // not supported by c0
+    this->exception(CoprocessorError);
+}
+void Cpu::OP_SWC1(const Instruction& instruction) {
+    // not supported by c1
+    this->exception(CoprocessorError);
+}
+void Cpu::OP_SWC2(const Instruction& instruction) {
+    std::cout << "Unhandled_GTE_SWC_instruction:_0x" << std::hex << instruction.opcode << std::endl;
+    throw std::exception();
+}
+void Cpu::OP_SWC3(const Instruction& instruction) {
+    // not supported by c3
+    this->exception(CoprocessorError);
+}
+
+void Cpu::OP_ILLEGAL(const Instruction &instruction) {
+    std::cout << "Illegal_instruction:_0x" << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
+    this->exception(IllegalInstruction);
+}
+
+// shift right logical variable
+void Cpu::OP_SRLV(const Instruction &instruction) {
+    auto t = instruction.t();
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    // shit amount truncated to 5 bits
+    auto value = this->getRegister(t) >> (this->getRegister(s) & 0x1fu);
+
+    this->setRegister(d, value);
+}
+
+// shift right arithmetic variable
+void Cpu::OP_SRAV(const Instruction &instruction) {
+    auto t = instruction.t();
+    auto s = instruction.s();
+    auto d = instruction.d();
+
+    // shit amount truncated to 5 bits
+    auto value = ((int32_t) this->getRegister(t)) >> (this->getRegister(s) & 0x1fu);
+
+    this->setRegister(d, (uint32_t) value);
+}
+// TODO debug after first NOR

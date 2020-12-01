@@ -21,6 +21,7 @@ enum Exception {
     StoreAddressError = 0x5,
     Break = 0x9,
     CoprocessorError = 0xb,
+    IllegalInstruction = 0xa,
 };
 
 class Cpu {
@@ -93,9 +94,31 @@ private:
     void OP_DIVU(const Instruction &instruction);
     void OP_MFHI(const Instruction &instruction);
     void OP_SLT(const Instruction &instruction);
+    void OP_SLLV(const Instruction &instruction);
+    void OP_LH(const Instruction &instruction);
+    void OP_XOR(const Instruction &instruction);
+    void OP_SUB(const Instruction &instruction);
+    void OP_MULT(const Instruction &instruction);
+    void OP_BREAK(const Instruction &instruction);
+    void OP_XORI(const Instruction &instruction);
+    void OP_LWL(const Instruction &instruction);
+    void OP_LWR(const Instruction &instruction);
+    void OP_SWL(const Instruction &instruction);
+    void OP_SWR(const Instruction &instruction);
     // coprocessor opcodes
+    void OP_COP3(const Instruction &instruction);
+    void OP_COP1(const Instruction &instruction);
+    void OP_COP2(const Instruction &instruction);
     void OP_COP0(const Instruction &instruction);
     void OP_MTC0(const Instruction &instruction);
+    void OP_LWC0(const Instruction &instruction);
+    void OP_LWC1(const Instruction &instruction);
+    void OP_LWC2(const Instruction &instruction);
+    void OP_LWC3(const Instruction &instruction);
+    void OP_SWC0(const Instruction &instruction);
+    void OP_SWC1(const Instruction &instruction);
+    void OP_SWC2(const Instruction &instruction);
+    void OP_SWC3(const Instruction &instruction);
 
     // registers
     uint32_t pc; // Instruction Pointer (Program Counter)
@@ -139,29 +162,11 @@ private:
 
     uint16_t load16(uint32_t address) const;
 
-    void OP_SLLV(const Instruction &instruction);
+    void OP_ILLEGAL(const Instruction &instruction);
 
-    void OP_LH(const Instruction &instruction);
+    void OP_SRLV(const Instruction &instruction);
 
-    void OP_XOR(const Instruction &instruction);
-
-    void OP_SUB(const Instruction &instruction);
-
-    void OP_MULT(const Instruction &instruction);
-
-    void OP_BREAK(const Instruction &instruction);
-
-    void OP_XORI(const Instruction &instruction);
-
-    void OP_COP3(const Instruction &instruction);
-
-    void OP_COP1(const Instruction &instruction);
-
-    void OP_COP2(const Instruction &instruction);
-
-    void OP_LWL(const Instruction &instruction);
-
-    void OP_LWR(const Instruction &instruction);
+    void OP_SRAV(const Instruction &instruction);
 };
 
 
