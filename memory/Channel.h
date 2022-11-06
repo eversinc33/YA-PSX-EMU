@@ -35,7 +35,9 @@ enum Port {
 class Channel
 {
 public:
-    Channel() : enable(false), direction(ToRam), step(Increment), sync(Manual), trigger(false), chop(false), chopDmaSz(0), chopCpuSz(0), dummy(0) {
+    uint32_t base; // channels base address: address of first word to be read/written from/to RAM
+
+    Channel() : enable(false), direction(ToRam), step(Increment), sync(Manual), trigger(false), chop(false), chopDmaSz(0), chopCpuSz(0), dummy(0), base(0) {
         
     };
     ~Channel() {
@@ -44,6 +46,7 @@ public:
 
     uint32_t getControl() const;
     void setControl(const uint32_t &value);
+    void setBase(const uint32_t &value);
 
 private:
     bool enable;
@@ -55,6 +58,7 @@ private:
     uint8_t chopDmaSz; // chopping DMA window size (log2 number of words)
     uint8_t chopCpuSz; // choppung CPU window size (log2 number of cycles)
     uint8_t dummy; // unkown 2 rw bits in config register
+
 };
 
 #endif

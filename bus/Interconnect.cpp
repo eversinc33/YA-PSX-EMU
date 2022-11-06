@@ -32,6 +32,9 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         if (major <= 6) {
             auto channel = this->dma->getChannel(Port(major));
             switch (minor) {
+                case 0:
+                    return channel.base;
+                    break;
                 case 8:
                     return channel.getControl();
                     break;
@@ -123,9 +126,12 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         auto major = (offset & (uint32_t)0x70) >> 4;
         auto minor = (offset & (uint32_t)0xf); 
         // Per-channel registers
-        if (major <= 7) {
+        if (major <= 6) {
             auto channel = this->dma->getChannel(Port(major));
             switch (minor) {
+                case 0:
+                    return channel.setBase(value);
+                    break;
                 case 8:
                     return channel.setControl(value);
                     break;
@@ -135,7 +141,7 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
             }
         }
         // Common DMA registers
-        else if (major == 8) {
+        else if (major == 7) {
             switch (minor) {
                 case 0:
                     return this->dma->setControl(value);

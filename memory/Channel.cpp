@@ -44,3 +44,8 @@ void Channel::setControl(const uint32_t &value) {
 
     this->dummy = (uint8_t)((value >> 29) & (uint32_t)3);
 }
+
+void Channel::setBase(const uint32_t &value) {
+    // only bis 0:23 are relevant since only 16MB RAM are accessible by the DMA
+    this->base = value & 0xffffff;
+}
