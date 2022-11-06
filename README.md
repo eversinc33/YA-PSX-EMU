@@ -1,5 +1,8 @@
-# YA PSX EMU
+# YA-PSX-EMU
 
-following simias guide for writing a PSX Emulator in Rust while writing it in C++.
+WIP Playstation (PSX) emulator in C++
 
-See: https://github.com/simias/psx-guide
+### Credits
+
+* Playstation Emulation Guide (Rust) - https://github.com/simias/psx-guide
+* Nocash PSX specifications - https://problemkaputt.de/psx-spx.htm
