@@ -1,7 +1,3 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #ifndef PSXEMU_RANGE_H
 #define PSXEMU_RANGE_H
 

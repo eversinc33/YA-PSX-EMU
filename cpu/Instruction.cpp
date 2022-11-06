@@ -1,7 +1,3 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #include "Instruction.h"
 
 // return bits 32:26 of the instruction

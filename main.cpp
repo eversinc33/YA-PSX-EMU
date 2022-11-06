@@ -3,14 +3,15 @@
 #include "cpu/Cpu.h"
 #include "memory/Ram.h"
 
-const char* FNAME = "/home/sven/CLionProjects/PSXEMU/SCPH1001.BIN";
+const char* FNAME = "./SCPH1001.BIN";
 const uint32_t BUFFERSIZE = 512*1024; // 512KB bios size
 
 int main() {
     Bios bios = Bios(FNAME, BUFFERSIZE);
     Ram ram = Ram();
+    Dma dma = Dma();
 
-    Interconnect interconnect = Interconnect(&bios, &ram);
+    Interconnect interconnect = Interconnect(&bios, &ram, &dma);
 
     Cpu cpu = Cpu(&interconnect);
 

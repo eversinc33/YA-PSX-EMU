@@ -1,10 +1,5 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #ifndef PSXEMU_INTERCONNECT_H
 #define PSXEMU_INTERCONNECT_H
-
 
 #include "../bios/Bios.h"
 #include "../memory/Ram.h"

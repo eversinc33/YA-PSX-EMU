@@ -1,14 +1,8 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #ifndef PSXEMU_RAM_H
 #define PSXEMU_RAM_H
 
 #include <vector>
 #include "Range.h"
-
-
 
 class Ram {
 public:

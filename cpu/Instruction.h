@@ -1,10 +1,5 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #ifndef PSXEMU_INSTRUCTION_H
 #define PSXEMU_INSTRUCTION_H
-
 
 #include <cstdint>
 

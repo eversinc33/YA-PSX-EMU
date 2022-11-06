@@ -1,7 +1,3 @@
-//
-// Created by sven on 01.12.20.
-//
-
 #include "Dma.h"
 
 void Dma::setControl(const uint32_t &value)  {
@@ -36,4 +32,8 @@ void Dma::setInterrupt(uint32_t val) {
     // writing 1 to a flag resets it
     auto ack = (uint8_t) ((val >> 24u) & 0x3fu);
     this->channelIrqFlags &= ~ack;
+}
+
+Channel Dma::getChannel(const Port &port) {
+    return this->channels[port];
 }

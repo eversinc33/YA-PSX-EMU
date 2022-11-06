@@ -1,13 +1,7 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #ifndef PSXEMU_BIOS_H
 #define PSXEMU_BIOS_H
 
-
 #include <cstdint>
-#include <bits/types/FILE.h>
 #include <cstdio>
 #include <fstream>
 #include "../memory/Range.h"

@@ -1,7 +1,3 @@
-//
-// Created by sven on 01.12.20.
-//
-
 #ifndef PSXEMU_MEMORYMAP_H
 #define PSXEMU_MEMORYMAP_H
 

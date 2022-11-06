@@ -1,7 +1,3 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #include <iostream>
 #include <bitset>
 #include "Cpu.h"

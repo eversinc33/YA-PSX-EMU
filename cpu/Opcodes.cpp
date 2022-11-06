@@ -1,4 +1,3 @@
-#include <tiff.h>
 #include <iostream>
 #include <bitset>
 #include "Cpu.h"
@@ -141,12 +140,12 @@ bool addOverflow(uint32_t x, uint32_t y, uint32_t &res)
 // add immediate
 // we simply add immediate to source, save in target and throw an exception on overflow
 void Cpu::OP_ADDI(const Instruction& instruction) {
-    auto immediate = (int32) instruction.imm_se();
+    auto immediate = (int32_t) instruction.imm_se();
     auto t = instruction.t();
     auto s = instruction.s();
 
     uint32_t value;
-    if (addOverflow(((int32) this->getRegister(s)), immediate, value)) {
+    if (addOverflow(((int32_t) this->getRegister(s)), immediate, value)) {
         return this->exception(Overflow);
     }
     this->setRegister(t, value);
@@ -403,8 +402,8 @@ void Cpu::OP_ADD(const Instruction &instruction) {
     auto s = instruction.s();
     auto d = instruction.d();
 
-    auto s_add = (int32) this->getRegister(s);
-    auto t_add = (int32) this->getRegister(t);
+    auto s_add = (int32_t) this->getRegister(s);
+    auto t_add = (int32_t) this->getRegister(t);
 
     uint32_t value;
     if (addOverflow(s_add, t_add, value)) {
@@ -419,7 +418,7 @@ void Cpu::OP_BGTZ(const Instruction &instruction) {
     auto immediate = instruction.imm_se();
     auto s = instruction.s();
 
-    auto val = (int32) this->getRegister(s); // sign cast necessary
+    auto val = (int32_t) this->getRegister(s); // sign cast necessary
 
     if (val > 0) {
         this->branch(immediate);
@@ -431,7 +430,7 @@ void Cpu::OP_BLEZ(const Instruction &instruction) {
     auto immediate = instruction.imm_se();
     auto s = instruction.s();
 
-    auto val = (int32) this->getRegister(s); // sign cast necessary
+    auto val = (int32_t) this->getRegister(s); // sign cast necessary
 
     if (val <= 0) {
         this->branch(immediate);
@@ -511,7 +510,7 @@ void Cpu::OP_SUB(const Instruction &instruction) {
     auto d = instruction.d();
 
     uint32_t value;
-    if (substractOverflow(((int32) this->getRegister(s)), ((int32) this->getRegister(t)), value)) {
+    if (substractOverflow(((int32_t) this->getRegister(s)), ((int32_t) this->getRegister(t)), value)) {
         return this->exception(Overflow);
     }
     this->setRegister(t, value);

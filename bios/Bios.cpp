@@ -1,10 +1,5 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #include <iostream>
 #include "Bios.h"
-
 
 uint8_t Bios::load8(const uint32_t &offset) const {
     return this->data[offset];

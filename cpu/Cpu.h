@@ -1,7 +1,3 @@
-//
-// Created by sven on 28.11.20.
-//
-
 #ifndef PSXEMU_CPU_H
 #define PSXEMU_CPU_H
 
