@@ -49,3 +49,34 @@ void Channel::setBase(const uint32_t &value) {
     // only bis 0:23 are relevant since only 16MB RAM are accessible by the DMA
     this->base = value & 0xffffff;
 }
+
+uint32_t Channel::getBlockControl() {
+    return ((uint32_t)this->blockCount << 16) | this->blockSize;
+}
+
+void Channel::setBlockControl(const uint32_t &value) {
+    this->blockCount = (uint16_t)(value >> 16);
+    this->blockSize = (uint16_t)value;
+}
+
+bool Channel::isActive() const {
+    // return true if the channel has been started
+    bool triggered = true;
+    // in manual sync, the CPU must set the trigger bit to start a channel
+    if (this->sync == Manual) {
+        triggered = this->trigger;
+    } else {
+        // otherwise no trigger needed
+        triggered = true;
+    }
+
+    return this->enable && triggered;
+}
+
+Sync Channel::getSyncMode() const {
+    return this->sync;
+}
+
+Step Channel::getStepMode() const {
+    return this->step;
+}

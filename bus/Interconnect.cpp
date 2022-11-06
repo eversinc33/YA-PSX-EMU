@@ -35,6 +35,9 @@ uint32_t Interconnect::load32(const uint32_t& address) {
                 case 0:
                     return channel.base;
                     break;
+                case 4:
+                    return channel.getBlockControl();
+                    break;
                 case 8:
                     return channel.getControl();
                     break;
@@ -127,18 +130,26 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         auto minor = (offset & (uint32_t)0xf); 
         // Per-channel registers
         if (major <= 6) {
-            auto channel = this->dma->getChannel(Port(major));
+            Port port = Port(major);
+            auto channel = this->dma->getChannel(port);
             switch (minor) {
                 case 0:
-                    return channel.setBase(value);
+                    channel.setBase(value);
+                    break;  
+                case 4:
+                    channel.setBlockControl(value);
                     break;
                 case 8:
-                    return channel.setControl(value);
+                    channel.setControl(value);
                     break;
                 default:
                     std::cout << "STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr << std::endl;
                     throw std::exception();
             }
+            if (channel.isActive()) {
+                this->doDma(port);
+            }
+            return;
         }
         // Common DMA registers
         else if (major == 7) {
@@ -269,3 +280,63 @@ uint32_t Interconnect::maskRegion(const uint32_t &address) {
     return address & REGION_MASK[index];
 }
 
+void Interconnect::doDma(const Port &port) {
+    // DMA Transfer to/from RAM
+    // for now, ignoring chopping/priority handling 
+    switch(this->dma->getChannel(port).getSyncMode()) {
+        case LinkedList:
+            std::cout << "!Linked_list_mode_unsupported" << std::endl;
+            throw std::exception();
+            break;
+        default:
+            this->doDmaBlock(port);
+            break;
+    }
+}
+
+void Interconnect::doDmaBlock(const Port &port) {
+    auto channel = this->dma->getChannel(port);
+    auto increment = (channel.getStepMode() == Increment) ? 4 : -4;
+    auto addr = channel.base;
+
+    // transfer size in words
+    auto transferSize = channel.getTransferSize();
+
+    while (transferSize > 0) {
+        // mask addr to ignore the two LSBs
+        auto currentAddr = addr & 0x1ffffc;
+
+        switch(channel.direction) {
+            case FromRam:
+                std::cout << "!Unhandled_FROM_RAM_dma_direction" << std::endl;
+                throw std::exception();
+                break;
+            case ToRam:
+                uint32_t srcWord;
+                switch(port) {
+                    case Otc:
+                        // Clear ordering table
+                        if (transferSize == 1) {
+                            // last entry contains the end-of-table-marker
+                            srcWord = 0xffffff;
+                        } else {
+                            // pointer to prev entry
+                            srcWord = (addr - 4) & 0x1fffff;
+                        }
+                        break;
+                    default:
+                        std::cout << "!Unhandled_DMA_port:" << (uint8_t)port << std::endl;
+                        throw std::exception();
+                        break;
+                }
+                // store in ram
+                this->store32(currentAddr, srcWord);
+                break;
+        }
+
+        addr + increment;
+        transferSize -= 1;
+    }
+
+    channel.done();
+}

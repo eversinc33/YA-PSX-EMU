@@ -42,6 +42,9 @@ public:
 
 private:
     uint32_t maskRegion(const uint32_t& address);
+
+    void doDma(const Port &port);
+    void doDmaBlock(const Port &port);
 };
 
 
