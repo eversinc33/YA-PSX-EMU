@@ -53,6 +53,8 @@ public:
     bool isActive() const;
     Sync getSyncMode() const;
     Step getStepMode() const;
+    uint32_t getTransferSize() const;
+    void done();
 
 private:
     bool enable;

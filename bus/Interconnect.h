@@ -45,6 +45,7 @@ private:
 
     void doDma(const Port &port);
     void doDmaBlock(const Port &port);
+    void doDmaLinkedList(const Port &port);
 };
 
 

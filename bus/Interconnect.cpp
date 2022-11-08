@@ -24,8 +24,8 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         std::cout << "STUB:IRQ_control_read:_0x" << std::hex << absAddr << std::endl;
         return 0; // we do not have interrupts for now so just return 0
     }
-    if (this->dma->range.contains(absAddr)) {
-        uint32_t offset = (absAddr - this->dma->range.start);
+    if (DMA.contains(absAddr)) {
+        uint32_t offset = (absAddr - DMA.start);
         auto major = (offset & uint32_t(0x70)) >> 4;
         auto minor = (offset & uint32_t(0xf)); 
         // Per-channel registers
@@ -69,14 +69,39 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         uint32_t offset = (absAddr - GPU.start);
         switch(offset) {
             case 4:
-                return 0x10000000; // bit 28 signals that the gpu is ready to receive dma blocks
+                // bits 26,27,28 signal that the gpu is ready to receive dma blocks and do cpu access
+                return 0b11100000000000000000000000000; // 0x1c000000; 
+                break;
             default:
                 std::cout << "STUB:GPU_read:_0x" << std::hex << absAddr << std::endl;
                 return 0;
+                break;
         }
     }
     if (EXPANSION_1.contains(absAddr)) {
         return 0xffffffff; // no expansion connected, so all ones
+    }
+    if (TIMERS.contains(absAddr)) {
+        uint32_t offset = (absAddr - TIMERS.start);
+        switch(offset) {
+            case 0:
+                // TODO: this should not be written to (yet)
+                std::cout << "STUB:Unhandled_load32_from_Timer0:_0x" << absAddr << std::endl;
+                return 0;
+                break;
+            case 16:
+                std::cout << "STUB:Unhandled_load32_from_Timer1:_0x" << absAddr << std::endl;
+                return 0;
+                break;
+            case 32:
+                std::cout << "STUB:Unhandled_load32_from_Timer2:_0x" << absAddr << std::endl;
+                return 0;
+                break;
+        }
+    }
+    if (SPU.contains(absAddr)) {
+        std::cout << "STUB:Unhandled_load32_from_SPU" << std::endl;
+        return 0;
     }
 
     std::cout << "Unhandled_load32_from_" << absAddr << std::endl;
@@ -124,8 +149,8 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         std::cout << "STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value << std::endl;
         return;
     }
-    if (this->dma->range.contains(absAddr)) {
-        uint32_t offset = (absAddr - this->dma->range.start);
+    if (DMA.contains(absAddr)) {
+        uint32_t offset = (absAddr - DMA.start);
         auto major = (offset & (uint32_t)0x70) >> 4;
         auto minor = (offset & (uint32_t)0xf); 
         // Per-channel registers
@@ -285,8 +310,7 @@ void Interconnect::doDma(const Port &port) {
     // for now, ignoring chopping/priority handling 
     switch(this->dma->getChannel(port).getSyncMode()) {
         case LinkedList:
-            std::cout << "!Linked_list_mode_unsupported" << std::endl;
-            throw std::exception();
+            this->doDmaLinkedList(port);
             break;
         default:
             this->doDmaBlock(port);
@@ -295,6 +319,8 @@ void Interconnect::doDma(const Port &port) {
 }
 
 void Interconnect::doDmaBlock(const Port &port) {
+    std::cout << "Starting DMA block mode" << std::endl;
+
     auto channel = this->dma->getChannel(port);
     auto increment = (channel.getStepMode() == Increment) ? 4 : -4;
     auto addr = channel.base;
@@ -305,14 +331,22 @@ void Interconnect::doDmaBlock(const Port &port) {
     while (transferSize > 0) {
         // mask addr to ignore the two LSBs
         auto currentAddr = addr & 0x1ffffc;
+        uint32_t srcWord;
 
         switch(channel.direction) {
             case FromRam:
-                std::cout << "!Unhandled_FROM_RAM_dma_direction" << std::endl;
-                throw std::exception();
+                srcWord = this->ram->load32(currentAddr);
+                switch(port) {
+                    case Gpu:
+                        std::cout << "STUB:Gpu_data_0x" << std::hex << srcWord << std::endl;
+                        break;
+                    default:
+                        std::cout << "Unhandled_FROM_RAM_dma_direction" << std::endl;
+                        throw std::exception();
+                        break;
+                }
                 break;
             case ToRam:
-                uint32_t srcWord;
                 switch(port) {
                     case Otc:
                         // Clear ordering table
@@ -334,8 +368,56 @@ void Interconnect::doDmaBlock(const Port &port) {
                 break;
         }
 
-        addr + increment;
+        addr += increment;
         transferSize -= 1;
+    }
+
+    channel.done();
+}
+
+// Emulate DMA transfer for linked list synchronization mode
+void Interconnect::doDmaLinkedList(const Port &port) {
+    std::cout << "Starting DMA linked list " << std::endl;
+
+    auto channel = this->dma->getChannel(port);
+
+    auto addr = channel.base & 0x1ffffc;
+
+    if (channel.direction == ToRam) {
+        std::cout << "Invalid_direction_for_linked_list_mode" << std::endl;
+        throw std::exception();
+    }
+
+    if (port != Gpu) {
+        std::cout << "Linked_list_mode_attempted_on_non_gpu_port:0x" << std::hex << port << std::endl;
+        throw std::exception();
+    }
+
+    // parse linked list
+    while (true) {
+        // Each entry starts with a header word. The high bytes contains the number of words in the packet
+        // that follow the header.
+        auto header = this->ram->load32(addr);
+        auto remSz = header >> 24;
+
+        // process words following the header
+        while (remSz > 0) {
+            addr = (addr + 4) & 0x1ffffc;
+
+            auto command = this->ram->load32(addr);
+
+            // TODO: implement gpu commands
+            std::cout << "STUB:GPU_command:0x" << std::hex << command;
+            remSz -= 1;
+        }
+
+        // check for end of mark
+        if ((header & 0x800000) != 0) {
+            break;
+        }
+
+        // otherwise proceed with next entry
+        addr = header & 0x1ffffc;
     }
 
     channel.done();

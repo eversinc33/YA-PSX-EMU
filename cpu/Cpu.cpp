@@ -176,7 +176,7 @@ void Cpu::exception(Exception exception) {
     // save current instruction address in EPC
     this->epc = this->current_pc;
 
-    // special case, if the exception occurs in the dela slot
+    // special case, if the exception occurs in the delay slot
     if (this->inDelaySlot) {
         this->epc = this->epc - 4;
         // also set bit 31 of cause register

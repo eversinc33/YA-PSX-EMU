@@ -80,3 +80,34 @@ Sync Channel::getSyncMode() const {
 Step Channel::getStepMode() const {
     return this->step;
 }
+
+// Return the DMA transfer size in bytes 
+uint32_t Channel::getTransferSize() const {
+    uint32_t bs = this->blockSize;
+    uint32_t bc = this->blockCount;
+
+    switch(this->sync) {
+        case Manual:
+            return bs;
+            break;
+        case Request:
+            return bc*bs;
+            break;
+        case LinkedList:
+            // Linked list mode (GTE) does not care about block size but processes until the end-mark is found (0xffffff)
+            std::cout << "Get_transfer_size_should_not_be_calles_in_linkedlist_mode" << std::endl;
+            throw std::exception();
+            break;
+        default:
+            std::cout << "Channel_has_unhandled_sync_mode" << std::endl;
+            throw std::exception();
+    }
+}
+
+// set channel status to completed
+void Channel::done() {
+    this->enable = false;
+    this->trigger = false;
+
+    // TODO: set other fields for particular interrupts
+}

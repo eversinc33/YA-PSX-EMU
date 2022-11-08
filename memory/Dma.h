@@ -19,7 +19,6 @@ private:
 
 public:
     uint32_t control; // DMA control register
-    const Range range = Range(0x1f801080,0x80); // dma, direct memory access
 
     Dma() : control(0x07654321) // reset value, see no$ psx spec
     {

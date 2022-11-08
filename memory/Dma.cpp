@@ -1,4 +1,5 @@
 #include "Dma.h"
+#include <iostream>
 
 void Dma::setControl(const uint32_t &value)  {
     this->control = value;
@@ -35,5 +36,6 @@ void Dma::setInterrupt(uint32_t val) {
 }
 
 Channel Dma::getChannel(const Port &port) {
+    std::cout << "configuring channel " << std::hex << port << std::endl;
     return this->channels[port];
 }
