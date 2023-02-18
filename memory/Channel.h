@@ -25,7 +25,7 @@ enum Sync {
 enum Port {
     MdecIn = 0, // Macroblock decoder input
     MdecOut = 1, // Macroblock decoder output
-    Gpu = 2,
+    Gpu_port = 2,
     CdRom = 3, 
     Spu = 4,
     Pio = 5, // Extension port

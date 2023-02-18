@@ -1,7 +1,6 @@
 #ifndef PSXEMU_RANGE_H
 #define PSXEMU_RANGE_H
 
-
 #include <cstdint>
 
 class Range {

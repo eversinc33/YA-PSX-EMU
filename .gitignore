@@ -5,3 +5,4 @@ CMakeFiles/
 .vscode/
 build/
 guide.pdf
+.DS_Store

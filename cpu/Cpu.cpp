@@ -2,6 +2,7 @@
 #include <bitset>
 #include "Cpu.h"
 #include "Instruction.h"
+#include "../util/logging.h"
 
 void Cpu::runNextInstruction() {
 
@@ -28,10 +29,10 @@ void Cpu::runNextInstruction() {
     // debug
     this->n_instructions++;
     /*
-    std::cout << std::endl << std::dec << "#" << n_instructions << std::endl;
-    std::cout << "$12: " << std::hex << this->getRegister({0xa1}) << std::endl;
-    std::cout << "$PC: " << std::hex << this->pc << std::endl;
-    std::cout << "Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
+    debug(std::endl << std::dec << "#" << n_instructions);
+    debug("$12: " << std::hex << this->getRegister({0xa1}));
+    debug("$PC: " << std::hex << this->pc);
+    debug("Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
     */
 
     // execute next instrudction
@@ -67,8 +68,8 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         //this->DEBUG = true;
     }
     if (this->DEBUG) {
-        std::cout << "opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()) << std::endl;
-        std::cout << "pc: " << this->current_pc << std::endl;
+        debug("opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
+        debug("pc: " << this->current_pc);
         getchar();
     }
 

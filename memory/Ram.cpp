@@ -20,10 +20,10 @@ void Ram::store32(const uint32_t &offset, const uint32_t &value) {
     auto b2 = value >> 16u;
     auto b3 = value >> 24u;
 
-    /*std::cout << std::bitset<8>(b0) << std::endl;
-    std::cout << std::bitset<8>(b1) << std::endl;
-    std::cout << std::bitset<8>(b2) << std::endl;
-    std::cout << std::bitset<8>(b3) << std::endl;*/
+    /*debug(std::bitset<8>(b0));
+    debug(std::bitset<8>(b1));
+    debug(std::bitset<8>(b2));
+    debug(std::bitset<8>(b3));*/
 
     this->data[offset + 0] = b0;
     this->data[offset + 1] = b1;

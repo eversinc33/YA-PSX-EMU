@@ -1,6 +1,7 @@
 #include "Channel.h"
 #include <exception>
 #include <iostream>
+#include "../util/logging.h"
 
 uint32_t Channel::getControl() const {
     uint32_t control = 0;
@@ -32,7 +33,7 @@ void Channel::setControl(const uint32_t &value) {
             this->sync = LinkedList;
             break;
         default:
-            std::cout << "Invalid_DMA_sync_mode:0x" << std::hex << ((value >> 9) & (uint32_t)3) << std::endl;
+            debug("Invalid_DMA_sync_mode:0x" << std::hex << ((value >> 9) & (uint32_t)3));
             throw std::exception();
     }
 
@@ -95,11 +96,11 @@ uint32_t Channel::getTransferSize() const {
             break;
         case LinkedList:
             // Linked list mode (GTE) does not care about block size but processes until the end-mark is found (0xffffff)
-            std::cout << "Get_transfer_size_should_not_be_calles_in_linkedlist_mode" << std::endl;
+            debug("Get_transfer_size_should_not_be_called_in_linkedlist_mode");
             throw std::exception();
             break;
         default:
-            std::cout << "Channel_has_unhandled_sync_mode" << std::endl;
+            debug("Channel_has_unhandled_sync_mode");
             throw std::exception();
     }
 }

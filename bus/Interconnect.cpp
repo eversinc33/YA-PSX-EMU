@@ -1,12 +1,12 @@
-#include <iostream>
 #include "Interconnect.h"
 #include "../memory/MemoryMap.h"
+#include "../util/logging.h"
 
 // Load 32 bit from the appropriate peripehral, by checking
 // if it is in range of the memory and calculating the offset
 uint32_t Interconnect::load32(const uint32_t& address) {
     if (address % 4 != 0) {
-        std::cout << "unaligned_load32_address_" << std::hex << address << std::endl;
+        debug("unaligned_load32_address_" << std::hex << address);
         throw std::exception();
     }
 
@@ -21,7 +21,7 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         return this->ram->load32(offset);
     }
     if (IRQ_CONTROL.contains(absAddr)) {
-        std::cout << "STUB:IRQ_control_read:_0x" << std::hex << absAddr << std::endl;
+        debug("STUB:IRQ_control_read:_0x" << std::hex << absAddr);
         return 0; // we do not have interrupts for now so just return 0
     }
     if (DMA.contains(absAddr)) {
@@ -42,7 +42,7 @@ uint32_t Interconnect::load32(const uint32_t& address) {
                     return channel.getControl();
                     break;
                 default:
-                    std::cout << "STUB:a_unhandled_DMA_read:_0x" << std::hex << offset << std::endl; // absAddr << std::endl;
+                    debug("STUB:a_unhandled_DMA_read:_0x" << std::hex << offset); // absAddr);
                     throw std::exception();
             }
         }
@@ -56,12 +56,12 @@ uint32_t Interconnect::load32(const uint32_t& address) {
                     return this->dma->getInterrupt();
                     break;
                 default:
-                    std::cout << "STUB:b_unhandled_DMA_read:_0x" << std::hex << absAddr << std::endl;
+                    debug("STUB:b_unhandled_DMA_read:_0x" << std::hex << absAddr);
                     throw std::exception();
             }
         }
         else {
-            std::cout << "STUB:c_unhandled_DMA_read:_0x" << std::hex << absAddr << std::endl;
+            debug("STUB:c_unhandled_DMA_read:_0x" << std::hex << absAddr);
             throw std::exception();
         }
     }
@@ -73,7 +73,7 @@ uint32_t Interconnect::load32(const uint32_t& address) {
                 return 0b11100000000000000000000000000; // 0x1c000000; 
                 break;
             default:
-                std::cout << "STUB:GPU_read:_0x" << std::hex << absAddr << std::endl;
+                debug("STUB:GPU_read:_0x" << std::hex << absAddr);
                 return 0;
                 break;
         }
@@ -86,31 +86,31 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         switch(offset) {
             case 0:
                 // TODO: this should not be written to (yet)
-                std::cout << "STUB:Unhandled_load32_from_Timer0:_0x" << absAddr << std::endl;
+                debug("STUB:Unhandled_load32_from_Timer0:_0x" << absAddr);
                 return 0;
                 break;
             case 16:
-                std::cout << "STUB:Unhandled_load32_from_Timer1:_0x" << absAddr << std::endl;
+                debug("STUB:Unhandled_load32_from_Timer1:_0x" << absAddr);
                 return 0;
                 break;
             case 32:
-                std::cout << "STUB:Unhandled_load32_from_Timer2:_0x" << absAddr << std::endl;
+                debug("STUB:Unhandled_load32_from_Timer2:_0x" << absAddr);
                 return 0;
                 break;
         }
     }
     if (SPU.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_load32_from_SPU" << std::endl;
+        debug("STUB:Unhandled_load32_from_SPU");
         return 0;
     }
 
-    std::cout << "Unhandled_load32_from_" << absAddr << std::endl;
+    debug("Unhandled_load32_from_" << absAddr);
     throw std::exception();
 }
 
 void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
     if (address % 4 != 0) {
-        std::cout << "unaligned_store32_address_" << std::hex << address << std::endl;
+        debug("unaligned_store32_address_" << std::hex << address);
         throw std::exception();
     }
 
@@ -122,31 +122,31 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
             // at offsets 0 and 4, the base address of the expansion 1 and 2 register maps are stored, these should never change
             case 0:
                 if (value != 0x1f000000) {
-                    std::cout << "Bad_expansion_1_base_address:0x" << std::hex << value << std::endl;
+                    debug("Bad_expansion_1_base_address:0x" << std::hex << value);
                     throw std::exception();
                 }
                 break;
             case 4:
                 if (value != 0x1f802000) {
-                    std::cout << "Bad_expansion_2_base_address:0x" << std::hex << value << std::endl;
+                    debug("Bad_expansion_2_base_address:0x" << std::hex << value);
                     throw std::exception();
                 }
                 break;
             default:
-                std::cout << "STUB:Unhandled_write_to_MEMCONTROL_register:0x" << std::hex << value << std::endl;
+                debug("STUB:Unhandled_write_to_MEMCONTROL_register:0x" << std::hex << value);
         }
         return;
     }
     if (RAM_SIZE_REGISTER.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_RAM_SIZE_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_RAM_SIZE_register:0x" << std::hex << value);
         return;
     }
     if (CACHE_CONTROL.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_CACHE_CONTROL_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_CACHE_CONTROL_register:0x" << std::hex << value);
         return;
     }
     if (IRQ_CONTROL.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value);
         return;
     }
     if (DMA.contains(absAddr)) {
@@ -168,7 +168,7 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
                     channel.setControl(value);
                     break;
                 default:
-                    std::cout << "STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr << std::endl;
+                    debug("STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr);
                     throw std::exception();
             }
             if (channel.isActive()) {
@@ -186,21 +186,21 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
                     return this->dma->setInterrupt(value);
                     break;
                 default:
-                    std::cout << "STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr << std::endl;
+                    debug("STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr);
                     throw std::exception();
             }
         }
         else {
-            std::cout << "STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr << std::endl;
+            debug("STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr);
             throw std::exception();
         }
     }
     if (GPU.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_GPU_register:0x" << std::hex << absAddr << std::endl;
+        debug("STUB:Unhandled_write_to_GPU_register:0x" << std::hex << absAddr);
         return;
     }
     if (TIMERS.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_TIMER_register:0x" << std::hex << absAddr << std::endl;
+        debug("STUB:Unhandled_write_to_TIMER_register:0x" << std::hex << absAddr);
         return;
     }
     if (this->ram->range.contains(absAddr)) {
@@ -208,7 +208,7 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         return this->ram->store32(offset, value);
     }
 
-    std::cout << "unhandled_store32_address_" << std::hex << absAddr << std::endl;
+    debug("unhandled_store32_address_" << std::hex << absAddr);
     throw std::exception();
 }
 
@@ -220,15 +220,15 @@ void Interconnect::store8(const uint32_t &address, const uint8_t &value) {
         return this->ram->store8(offset, value);
     }
     if (EXPANSION_1.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_EXPANSION_1_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_EXPANSION_1_register:0x" << std::hex << value);
         return;
     }
     if (EXPANSION_2.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_EXPANSION_2_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_EXPANSION_2_register:0x" << std::hex << value);
         return;
     }
 
-    std::cout << "unhandled_store8_address_" << std::hex << absAddr << std::endl;
+    debug("unhandled_store8_address_" << std::hex << absAddr);
     throw std::exception();
 }
 
@@ -247,7 +247,7 @@ uint8_t Interconnect::load8(const uint32_t& address) {
         return this->ram->load8(offset);
     }
 
-    std::cout << "Unhandled_load8_from_" << absAddr << std::endl;
+    debug("Unhandled_load8_from_" << absAddr);
     throw std::exception();
 }
 
@@ -255,11 +255,11 @@ uint16_t Interconnect::load16(uint32_t address) {
     auto absAddr = this->maskRegion(address);
 
     if (SPU.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_read_from_SPU_register:_0x" << std::hex << absAddr << std::endl;
+        debug("STUB:Unhandled_read_from_SPU_register:_0x" << std::hex << absAddr);
         return 0;
     }
     if (IRQ_CONTROL.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_read_from_IRQ_CONTROL_register:0x" << std::hex << absAddr << std::endl;
+        debug("STUB:Unhandled_read_from_IRQ_CONTROL_register:0x" << std::hex << absAddr);
         return 0;
     }
     if (this->ram->range.contains(absAddr)) {
@@ -267,28 +267,28 @@ uint16_t Interconnect::load16(uint32_t address) {
         return this->ram->load16(offset);
     }
 
-    std::cout << "unhandled_load16_address_" << std::hex << absAddr << std::endl;
+    debug("unhandled_load16_address_" << std::hex << absAddr);
     throw std::exception();
 }
 
 void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
     if (address % 2 != 0) {
-        std::cout << "unaligned_store16_address_" << std::hex << address << std::endl;
+        debug("unaligned_store16_address_" << std::hex << address);
         throw std::exception();
     }
 
     auto absAddr = this->maskRegion(address);
 
     if (SPU.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_SPU_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_SPU_register:0x" << std::hex << value);
         return;
     }
     if (TIMERS.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_TIMER_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_TIMER_register:0x" << std::hex << value);
         return;
     }
     if (IRQ_CONTROL.contains(absAddr)) {
-        std::cout << "STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value << std::endl;
+        debug("STUB:Unhandled_write_to_IRQ_CONTROL_register:0x" << std::hex << value);
         return;
     }
     if (this->ram->range.contains(absAddr)) {
@@ -296,7 +296,7 @@ void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
         return this->ram->store16(offset, value);
     }
 
-    std::cout << "unhandled_store16_address_" << std::hex << absAddr << std::endl;
+    debug("unhandled_store16_address_" << std::hex << absAddr);
     throw std::exception();
 }
 
@@ -319,7 +319,7 @@ void Interconnect::doDma(const Port &port) {
 }
 
 void Interconnect::doDmaBlock(const Port &port) {
-    std::cout << "Starting DMA block mode" << std::endl;
+    debug("Starting DMA block mode");
 
     auto channel = this->dma->getChannel(port);
     auto increment = (channel.getStepMode() == Increment) ? 4 : -4;
@@ -337,11 +337,11 @@ void Interconnect::doDmaBlock(const Port &port) {
             case FromRam:
                 srcWord = this->ram->load32(currentAddr);
                 switch(port) {
-                    case Gpu:
-                        std::cout << "STUB:Gpu_data_0x" << std::hex << srcWord << std::endl;
+                    case Gpu_port:
+                        debug("STUB:Gpu_data_0x" << std::hex << srcWord);
                         break;
                     default:
-                        std::cout << "Unhandled_FROM_RAM_dma_direction" << std::endl;
+                        debug("Unhandled_FROM_RAM_dma_direction");
                         throw std::exception();
                         break;
                 }
@@ -359,7 +359,7 @@ void Interconnect::doDmaBlock(const Port &port) {
                         }
                         break;
                     default:
-                        std::cout << "!Unhandled_DMA_port:" << (uint8_t)port << std::endl;
+                        debug("!Unhandled_DMA_port:" << (uint8_t)port);
                         throw std::exception();
                         break;
                 }
@@ -377,19 +377,19 @@ void Interconnect::doDmaBlock(const Port &port) {
 
 // Emulate DMA transfer for linked list synchronization mode
 void Interconnect::doDmaLinkedList(const Port &port) {
-    std::cout << "Starting DMA linked list " << std::endl;
+    debug("Starting DMA linked list ");
 
     auto channel = this->dma->getChannel(port);
 
     auto addr = channel.base & 0x1ffffc;
 
     if (channel.direction == ToRam) {
-        std::cout << "Invalid_direction_for_linked_list_mode" << std::endl;
+        debug("Invalid_direction_for_linked_list_mode");
         throw std::exception();
     }
 
-    if (port != Gpu) {
-        std::cout << "Linked_list_mode_attempted_on_non_gpu_port:0x" << std::hex << port << std::endl;
+    if (port != Gpu_port) {
+        debug("Linked_list_mode_attempted_on_non_gpu_port:0x" << std::hex << port);
         throw std::exception();
     }
 
@@ -407,7 +407,7 @@ void Interconnect::doDmaLinkedList(const Port &port) {
             auto command = this->ram->load32(addr);
 
             // TODO: implement gpu commands
-            std::cout << "STUB:GPU_command:0x" << std::hex << command;
+            debug("STUB:GPU_command:0x" << std::hex << command);
             remSz -= 1;
         }
 
