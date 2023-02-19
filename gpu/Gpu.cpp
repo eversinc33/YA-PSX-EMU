@@ -104,11 +104,17 @@ void Gpu::gp0(const uint32_t& value)
         case 0xe1:
             this->gp0_draw_mode(value);
             break;
+        case 0xe2:
+            this->gp0_texture_window(value);
+            break;
         case 0xe3:
             this->gp0_set_drawing_area_top_left(value);
             break;
         case 0xe4:
             this->gp0_set_drawing_area_bottom_right(value);
+            break;
+        case 0xe5:
+            this->gp0_drawing_offset(value);
             break;
         default:
             DEBUG("Unhandled_GP0_command_0x" << std::hex << value);
@@ -174,6 +180,15 @@ void Gpu::gp0_draw_mode(const uint32_t& value)
     this->rectangle_texture_y_flip = ((value >> 13) & 1) != 0;
 }
 
+// GP0(0xE2): Set Texture Window
+void Gpu::gp0_texture_window(const uint32_t& value)
+{
+    this->texture_window_x_mask   = (uint8_t)(value & 0x1f);
+    this->texture_window_y_mask   = (uint8_t)((value >> 5) & 0x1f);
+    this->texture_window_x_offset = (uint8_t)((value >> 10) & 0x1f);
+    this->texture_window_y_offset = (uint8_t)((value >> 15) & 0x1f);
+}
+
 // GP0(0xE3): Set drawing area top left
 void Gpu::gp0_set_drawing_area_top_left(const uint32_t& value)
 {
@@ -188,6 +203,17 @@ void Gpu::gp0_set_drawing_area_bottom_right(const uint32_t& value)
     this->drawing_area_bottom = (uint16_t)((value >> 10) & 0x3ff);
     this->drawing_area_right  = (uint16_t)(value & 0x3ff);
     DEBUG("Current Drawing area: " << std::dec << this->drawing_area_left << " " << this->drawing_area_top << ", " << this->drawing_area_bottom << " " << (uint32_t)(this->drawing_area_right));
+}
+
+// GP0(0xE5): set drawing offset
+void Gpu::gp0_drawing_offset(const uint32_t& value)
+{
+    uint16_t x = (uint16_t)(value & 0x7ff);
+    uint16_t y = (uint16_t)((value >> 11) & 0x7ff);
+
+    // Values are 11bit two's complement signed values so we need to shift the value to 16 bits to force sign extension
+    this->drawing_x_offset = (int16_t)(x << 5) >> 5;
+    this->drawing_y_offset = (int16_t)(y << 5) >> 5;
 }
 
 // GP1(0x00): soft reset
