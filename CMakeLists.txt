@@ -5,14 +5,11 @@ set(CMAKE_CXX_STANDARD 14)
 
 FIND_PACKAGE(SDL2 REQUIRED)
 Message("")
-Message( STATUS "FINDING SDL2" )
 IF (${SDL2_FOUND})
-    Message( STATUS "SDL2_FOUND: " ${SDL2_FOUND})
-    Message( STATUS "SDL2_INCLUDE_DIR:" ${SDL2_INCLUDE_DIR})
-    Message( STATUS "SDL2_LIBRARY: " ${SDL2_LIBRARY})
+    Message(STATUS "SDL2_INCLUDE_DIR:" ${SDL2_INCLUDE_DIR})
+    Message(STATUS "SDL2_LIBRARY: " ${SDL2_LIBRARY})
 ELSE()
-    Message( STATUS "SDL2_FOUND: " ${SDL2_FOUND})
-    Message( FATAL_ERROR "SDL2 NOT FOUND" )
+    Message(FATAL_ERROR "SDL2 NOT FOUND")
 ENDIF()
 
 include_directories(PSXEMU ${SDL2_INCLUDE_DIRS})
@@ -42,6 +39,7 @@ add_executable(PSXEMU
     gpu/Gpu.h
     gpu/Renderer.cpp
     gpu/Renderer.h
+    gpu/Constants.h
 )
 
 target_link_libraries(PSXEMU SDL2::SDL2) # ${SDL2_LIBRARY})

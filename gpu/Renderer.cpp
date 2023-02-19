@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "../util/logging.h"
+#include "Constants.h"
 
 Renderer::Renderer()
 {
@@ -15,7 +16,7 @@ bool Renderer::init_sdl()
     }
     else
     {
-        this->window = SDL_CreateWindow("PSX", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, this->width, this->height, SDL_WINDOW_SHOWN);
+        this->window = SDL_CreateWindow("PSX", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH_PX, SCREEN_HEIGHT_PX, SDL_WINDOW_SHOWN);
         if (this->window == NULL)
         {
             debug("Window could not be created! SDL_Error: " << SDL_GetError());

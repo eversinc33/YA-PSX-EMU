@@ -16,8 +16,6 @@ public:
 private:
     SDL_Window* window;
     SDL_Surface* screen_surface;
-    const int width = 640;
-    const int height = 480;
     bool should_quit = false; 
 };
 
