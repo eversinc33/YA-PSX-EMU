@@ -19,6 +19,13 @@ uint32_t into_status(const uint8_t& hres)
     return ((uint32_t)(hres)) << 16;
 }
 
+// Retrieve value of the "read" register
+const uint32_t Gpu::read()
+{
+    // Do not implement for now
+    return 0;
+}
+
 // Retrieve value of the status register GPUSTAT. Read-Only register
 const uint32_t Gpu::status_read() 
 {
@@ -79,7 +86,7 @@ const uint32_t Gpu::status_read()
             break;
         default:
             // Should be unreachable code
-            debug("ERROR:invalid_dma_direction:0x" << std::hex << dma_direction)
+            DEBUG("ERROR:invalid_dma_direction:0x" << std::hex << dma_direction)
             break;
     }
     regval |= dma_request << 25;
@@ -98,7 +105,33 @@ void Gpu::gp0(const uint32_t& value)
             this->gp0_draw_mode(value);
             break;
         default:
-            debug("Unhandled_GP0_command_0x" << std::hex << value);
+            DEBUG("Unhandled_GP0_command_0x" << std::hex << value);
+            throw std::exception();
+            break;
+    }
+}
+
+// Handles write to the GP1 command register
+void Gpu::gp1(const uint32_t& value)
+{
+    uint32_t opcode = (value >> 24) & 0xff;
+
+    switch (opcode) {
+        case 0x00: 
+            this->gp1_reset(value);
+            break; 
+        case 0x04:
+            this->gp1_dma_direction(value);
+            break;
+        case 0x08:
+            this->gp1_display_mode(value);
+            break; 
+        case 0xE3:
+            DEBUG("YES" << std::hex << value);
+            throw std::exception();
+            break;
+        default:
+            DEBUG("Unhandled_GP1_command_0x" << std::hex << value);
             throw std::exception();
             break;
     }
@@ -123,7 +156,7 @@ void Gpu::gp0_draw_mode(const uint32_t& value)
             this->texture_depth = T15Bit;
             break;
         default:
-            debug("Unhandled_texture_depth:0x" << std::hex << ((value >> 7) & 3));
+            DEBUG("Unhandled_texture_depth:0x" << std::hex << ((value >> 7) & 3));
             throw std::exception();
             break;
     }
@@ -176,4 +209,49 @@ void Gpu::gp1_reset(const uint32_t& value)
 
     // TODO: clear command FIFO when implemented
     // TODO: invalidate GPU cache when implemented
+}
+
+// GP1(0x80): Set display mode
+void Gpu::gp1_display_mode(const uint32_t& value)
+{
+    uint8_t hr1 = (uint8_t)(value & 3);
+    uint8_t hr2 = (uint8_t)((value >> 6) & 1);
+
+    this->hres = from_fields(hr1, hr2);
+
+    this->vres          = ((value & 0x4) != 0) ? Y480Lines : Y240Lines;
+    this->vmode         = ((value & 0x8) != 0) ? NTSC : PAL;
+    this->display_depth = ((value & 0x10) != 0) ? D24Bits : D15Bits; 
+
+    this->interlaced = (value & 0x20) != 0;
+
+    if ((value & 0x80) != 0) 
+    {
+        DEBUG("Unsupported_display_mode_0x" << std::hex << value);
+        throw std::exception();
+    }
+}
+
+// GP1(0x04): DMA Direction
+void Gpu::gp1_dma_direction(const uint32_t& value)
+{
+    switch (value & 3)
+    {
+        case 0:
+            this->dma_direction = Off;
+            break;
+        case 1:
+            this->dma_direction = FIFO;
+            break;
+        case 2:
+            this->dma_direction = CpuToGp0;
+            break;
+        case 3:
+            this->dma_direction = VRamToCPU;
+            break;
+        default:
+            DEBUG("Unhandled_DMA_direction_0x" << std::hex << value);
+            throw std::exception();
+            break;
+    }
 }

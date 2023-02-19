@@ -29,10 +29,10 @@ void Cpu::runNextInstruction() {
     // debug
     this->n_instructions++;
     /*
-    debug(std::endl << std::dec << "#" << n_instructions);
-    debug("$12: " << std::hex << this->getRegister({0xa1}));
-    debug("$PC: " << std::hex << this->pc);
-    debug("Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
+    DEBUG(std::endl << std::dec << "#" << n_instructions);
+    DEBUG("$12: " << std::hex << this->getRegister({0xa1}));
+    DEBUG("$PC: " << std::hex << this->pc);
+    DEBUG("Next instruction: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
     */
 
     // execute next instrudction
@@ -68,8 +68,8 @@ void Cpu::decodeAndExecute(const Instruction& instruction) {
         //this->DEBUG = true;
     }
     if (this->DEBUG) {
-        debug("opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
-        debug("pc: " << this->current_pc);
+        DEBUG("opcode: " << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
+        DEBUG("pc: " << this->current_pc);
         getchar();
     }
 

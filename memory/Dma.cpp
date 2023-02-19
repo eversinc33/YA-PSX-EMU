@@ -36,6 +36,5 @@ void Dma::setInterrupt(uint32_t val) {
 }
 
 Channel Dma::getChannel(const Port &port) {
-    debug("configuring channel " << std::hex << port);
     return this->channels[port];
 }

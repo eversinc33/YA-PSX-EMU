@@ -31,7 +31,7 @@ void Cpu::OP_SH(const Instruction &instruction) {
 
     if ((this->sr & 0x10000u) != 0u) {
         // cache is isolated, ignore writing
-        debug("STUB:ignoring_store_while_cache_is_isolated");
+        DEBUG("STUB:ignoring_store_while_cache_is_isolated");
         return;
     }
 
@@ -56,7 +56,7 @@ void Cpu::OP_SW(const Instruction& instruction) {
 
     if ((this->sr & 0x10000u) != 0) {
         // cache is isolated, ignore writing
-        debug("STUB:ignoring_store_while_cache_is_isolated");
+        DEBUG("STUB:ignoring_store_while_cache_is_isolated");
         return;
     }
 
@@ -80,7 +80,7 @@ void Cpu::OP_LW(const Instruction &instruction) {
 
     if ((this->sr & 0x10000u) != 0) {
         // cache is isolated, ignore load
-        debug("STUB:ignoring_load_while_cache_is_isolated");
+        DEBUG("STUB:ignoring_load_while_cache_is_isolated");
         return;
     }
 
@@ -265,8 +265,8 @@ void Cpu::OP_COP0(const Instruction &instruction) {
             this->OP_RFE(instruction);
             break;
         default:
-            debug("Unhandled opcode " << std::hex << instruction.opcode);
-            debug("Unhandled opcode for CoProcessor" << std::bitset<8>(instruction.cop_opcode()));
+            DEBUG("Unhandled opcode " << std::hex << instruction.opcode);
+            DEBUG("Unhandled opcode for CoProcessor" << std::bitset<8>(instruction.cop_opcode()));
             throw std::exception();
     }
 }
@@ -287,7 +287,7 @@ void Cpu::OP_MTC0(const Instruction& instruction) {
         case 9:
         case 11: // breakpoint registers
             if (value != 0) {
-                debug("Unhandled_write_to_cop0_register:_" << std::dec << cop_r);
+                DEBUG("Unhandled_write_to_cop0_register:_" << std::dec << cop_r);
                 throw std::exception();
             }
         case 12: // status register
@@ -295,11 +295,11 @@ void Cpu::OP_MTC0(const Instruction& instruction) {
             break;
         case 13: // cause register, for exceptions
             if (value != 0) {
-                debug("Unhandled_write_to_CAUSE_register:_" << std::dec << value);
+                DEBUG("Unhandled_write_to_CAUSE_register:_" << std::dec << value);
                 throw std::exception();
             }
         default:
-            debug("STUB:Unhandled_cop0_register:_" << std::dec << cop_r);
+            DEBUG("STUB:Unhandled_cop0_register:_" << std::dec << cop_r);
     }
 }
 
@@ -308,7 +308,7 @@ void Cpu::OP_SB(const Instruction &instruction) {
 
     if ((this->sr & 0x10000u) != 0u) {
         // cache is isolated, ignore writing
-        debug("STUB:ignoring_store_while_cache_is_isolated");
+        DEBUG("STUB:ignoring_store_while_cache_is_isolated");
         return;
     }
 
@@ -389,7 +389,7 @@ void Cpu::OP_MFC0(const Instruction& instruction) {
             value = this->epc;
             break;
         default:
-            debug("STUB:Unhandled_read_from_cop0_register:_" << std::dec << cop_r);
+            DEBUG("STUB:Unhandled_read_from_cop0_register:_" << std::dec << cop_r);
             throw std::exception();
     }
 
@@ -660,7 +660,7 @@ void Cpu::OP_RFE(const Instruction &instruction) {
     // since they are virtual memory related.
     // still check for buggy code
     if ((instruction.opcode & 0x3fu) != 0b010000) {
-        debug("Invalid_cop0_instruction:_" << instruction.opcode);
+        DEBUG("Invalid_cop0_instruction:_" << instruction.opcode);
     }
 
     // restore the pre-exception mode by shifting the interrupt bits of the status register back
@@ -778,7 +778,7 @@ void Cpu::OP_COP3(const Instruction &instruction) {
 
 // coprocessor 2, GTE (geometry transform engine)
 void Cpu::OP_COP2(const Instruction &instruction) {
-    debug("STUB:unhandled_GTE_instruction:_x0" << std::hex << instruction.opcode);
+    DEBUG("STUB:unhandled_GTE_instruction:_x0" << std::hex << instruction.opcode);
     throw std::exception();
 }
 
@@ -910,7 +910,7 @@ void Cpu::OP_LWC1(const Instruction& instruction) {
     this->exception(CoprocessorError);
 }
 void Cpu::OP_LWC2(const Instruction& instruction) {
-    debug("Unhandled_GTE_LWC_instruction:_0x" << std::hex << instruction.opcode);
+    DEBUG("Unhandled_GTE_LWC_instruction:_0x" << std::hex << instruction.opcode);
     throw std::exception();
 }
 void Cpu::OP_LWC3(const Instruction& instruction) {
@@ -928,7 +928,7 @@ void Cpu::OP_SWC1(const Instruction& instruction) {
     this->exception(CoprocessorError);
 }
 void Cpu::OP_SWC2(const Instruction& instruction) {
-    debug("Unhandled_GTE_SWC_instruction:_0x" << std::hex << instruction.opcode);
+    DEBUG("Unhandled_GTE_SWC_instruction:_0x" << std::hex << instruction.opcode);
     throw std::exception();
 }
 void Cpu::OP_SWC3(const Instruction& instruction) {
@@ -937,7 +937,7 @@ void Cpu::OP_SWC3(const Instruction& instruction) {
 }
 
 void Cpu::OP_ILLEGAL(const Instruction &instruction) {
-    debug("Illegal_instruction:_0x" << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
+    DEBUG("Illegal_instruction:_0x" << std::hex << instruction.opcode << "/" << std::bitset<8>(instruction.function()));
     this->exception(IllegalInstruction);
 }
 

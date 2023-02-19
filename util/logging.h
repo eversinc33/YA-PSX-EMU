@@ -17,6 +17,7 @@ inline std::string current_time()
     return buf;
 }
 
-#define debug(x) std::cout << "[PSX @ " << current_time() << "] " << x << std::endl;
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define DEBUG(x) std::cout << "[" << __FILENAME__ << " - " << current_time() << "] " << x << std::endl;
 
 #endif

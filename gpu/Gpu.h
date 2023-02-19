@@ -80,9 +80,13 @@ public:
     ~Gpu();
 
     const uint32_t status_read();
+    const uint32_t read();
     void gp0(const uint32_t& value);
+    void gp1(const uint32_t& value);
     void gp0_draw_mode(const uint32_t& value);
     void gp1_reset(const uint32_t& value);
+    void gp1_dma_direction(const uint32_t& value);
+    void gp1_display_mode(const uint32_t& value);
 
 private:
     Renderer* renderer;

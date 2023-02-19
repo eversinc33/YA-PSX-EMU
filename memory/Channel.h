@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "../util/logging.h"
 
 enum Direction {
     ToRam = 0,
@@ -39,10 +40,8 @@ public:
     Direction direction;
 
     Channel() : enable(false), direction(ToRam), step(Increment), sync(Manual), trigger(false), chop(false), chopDmaSz(0), chopCpuSz(0), dummy(0), base(0) {
-        
     };
     ~Channel() {
-
     };
 
     uint32_t getControl() const;

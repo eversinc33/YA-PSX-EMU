@@ -8,7 +8,9 @@
 // Direct Memory Access
 class Dma {
 private:
-    Channel channels[7]; // The 7 channel instances
+    Channel channels[7] = {
+        Channel(), Channel(), Channel(), Channel(), Channel(), Channel(), Channel()
+    }; // The 7 channel instances
 
     // dma interrupt register, unpacked into variables
     bool irqEnable; // master IRQ enable
@@ -22,7 +24,6 @@ public:
 
     Dma() : control(0x07654321) // reset value, see no$ psx spec
     {
-
     }
 
     bool irq() const;
