@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(PSXEMU)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 FIND_PACKAGE(SDL2 REQUIRED)
 Message("")
@@ -30,10 +30,10 @@ add_executable(PSXEMU
     memory/Ram.h
     cpu/Opcodes.cpp
     memory/MemoryMap.h
-    memory/Dma.cpp
-    memory/Dma.h
     memory/Channel.cpp
     memory/Channel.h
+    memory/Dma.cpp
+    memory/Dma.h
     util/logging.h
     gpu/Gpu.cpp
     gpu/Gpu.h

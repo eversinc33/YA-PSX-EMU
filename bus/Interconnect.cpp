@@ -30,16 +30,16 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         auto minor = (offset & uint32_t(0xf)); 
         // Per-channel registers
         if (major <= 6) {
-            Channel channel = this->dma->getChannel(Port(major));
+            Channel* channel = this->dma->getChannel(Port(major));
             switch (minor) {
                 case 0:
-                    return channel.base;
+                    return channel->base;
                     break;
                 case 4:
-                    return channel.getBlockControl();
+                    return channel->getBlockControl();
                     break;
                 case 8:
-                    return channel.getControl();
+                    return channel->getControl();
                     break;
                 default:
                     DEBUG("STUB:a_unhandled_DMA_read:_0x" << std::hex << offset); // absAddr);
@@ -159,22 +159,22 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         // Per-channel registers
         if (major <= 6) {
             Port port = Port(major);
-            Channel channel = this->dma->getChannel(port);
+            Channel* channel = this->dma->getChannel(port);
             switch (minor) {
                 case 0:
-                    channel.setBase(value);
+                    channel->setBase(value);
                     break;  
                 case 4:
-                    channel.setBlockControl(value);
+                    channel->setBlockControl(value);
                     break;
                 case 8:
-                    channel.setControl(value);
+                    channel->setControl(value);
                     break;
                 default:
                     DEBUG("STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr);
                     throw std::exception();
             }
-            if (channel.isActive()) {
+            if (channel->isActive()) {
                 this->doDma(port);
             }
             return;
@@ -329,7 +329,7 @@ void Interconnect::doDma(const Port &port) {
     // DMA Transfer to/from RAM
     // for now, ignoring chopping/priority handling 
     DEBUG("DMA FOR PORT " << port)
-    switch(this->dma->getChannel(port).getSyncMode()) {
+    switch(this->dma->getChannel(port)->getSyncMode()) {
         case LinkedList:
             this->doDmaLinkedList(port);
             break;
@@ -342,19 +342,19 @@ void Interconnect::doDma(const Port &port) {
 void Interconnect::doDmaBlock(const Port &port) {
     DEBUG("Starting DMA block mode");
 
-    Channel channel = this->dma->getChannel(port);
-    uint8_t increment = (channel.getStepMode() == Increment) ? 4 : -4;
-    uint32_t addr = channel.base;
+    Channel* channel = this->dma->getChannel(port);
+    uint8_t increment = (channel->getStepMode() == Increment) ? 4 : -4;
+    uint32_t addr = channel->base;
 
     // transfer size in words
-    uint32_t transferSize = channel.getTransferSize();
+    uint32_t transferSize = channel->getTransferSize();
 
     while (transferSize > 0) {
         // mask addr to ignore the two LSBs
         uint32_t currentAddr = addr & 0x1ffffc;
         uint32_t srcWord;
 
-        switch(channel.direction) {
+        switch(channel->direction) {
             case FromRam:
                 srcWord = this->ram->load32(currentAddr);
                 switch(port) {
@@ -393,18 +393,18 @@ void Interconnect::doDmaBlock(const Port &port) {
         transferSize -= 1;
     }
 
-    channel.done();
+    channel->done();
 }
 
 // Emulate DMA transfer for linked list synchronization mode
 void Interconnect::doDmaLinkedList(const Port &port) {
     DEBUG("Starting DMA linked list ");
 
-    Channel channel = this->dma->getChannel(port);
+    Channel* channel = this->dma->getChannel(port);
 
-    uint32_t addr = channel.base & 0x1ffffc;
+    uint32_t addr = channel->base & 0x1ffffc;
 
-    if (channel.direction == ToRam) {
+    if (channel->direction == ToRam) {
         DEBUG("Invalid_direction_for_linked_list_mode");
         throw std::exception();
     }
@@ -442,5 +442,5 @@ void Interconnect::doDmaLinkedList(const Port &port) {
         addr = header & 0x1ffffc;
     }
 
-    channel.done();
+    channel->done();
 }

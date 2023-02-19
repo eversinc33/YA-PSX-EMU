@@ -42,6 +42,7 @@ public:
     Channel() : enable(false), direction(ToRam), step(Increment), sync(Manual), trigger(false), chop(false), chopDmaSz(0), chopCpuSz(0), dummy(0), base(0) {
     };
     ~Channel() {
+        DEBUG("DESTRUCTED");
     };
 
     uint32_t getControl() const;

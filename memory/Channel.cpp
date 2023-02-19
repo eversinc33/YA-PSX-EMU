@@ -22,17 +22,14 @@ void Channel::setControl(const uint32_t &value) {
     this->step = ((value >> 1) & 1) != 0 ? Decrement : Increment;
     this->chop = ((value >> 8) & 1) != 0;
     
-    DEBUG("SYNCMODE SET: " << ((value >> 9) & 3));
     switch((value >> 9) & 3) {
         case 0:
-            DEBUG("SETTING SYNCMODE TO " << static_cast<int>(Manual))
             this->sync = Manual; 
             break;
         case 1:
             this->sync = Request;
             break;
         case 2:
-            DEBUG("SETTING SYNCMODE TO " << static_cast<int>(LinkedList))
             this->sync = LinkedList;
             break;
         default:
@@ -81,8 +78,6 @@ bool Channel::isActive() const {
 }
 
 Sync Channel::getSyncMode() const {
-    // TODO FIXME: this somehow always returns 0??
-    DEBUG("SYNCMODE IN GETTER: " << this->sync);
     return this->sync;
 }
 

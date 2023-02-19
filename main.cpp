@@ -5,7 +5,7 @@
 #include "memory/Ram.h"
 #include "util/logging.h"
 
-const char* FNAME = "./SCPH1001.BIN";
+const char* FNAME = "/Users/sven/Documents/Code/Repos/YA-PSX-EMU/build/SCPH1001.BIN";
 const uint32_t BUFFERSIZE = 512*1024; // 512KB bios size
 
 int main() {

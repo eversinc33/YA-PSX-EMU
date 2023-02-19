@@ -1,9 +1,9 @@
 #ifndef PSXEMU_DMA_H
 #define PSXEMU_DMA_H
 
+#include "Channel.h"
 #include <cstdint>
 #include "Range.h"
-#include "Channel.h"
 
 // Direct Memory Access
 class Dma {
@@ -29,8 +29,7 @@ public:
     uint32_t getInterrupt();
     void setInterrupt(uint32_t val);
     void setControl(const uint32_t &value);
-    Channel getChannel(const Port &Port);
+    Channel* getChannel(const Port &Port);
 };
-
 
 #endif //PSXEMU_DMA_H

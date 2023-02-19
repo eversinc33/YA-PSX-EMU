@@ -35,6 +35,6 @@ void Dma::setInterrupt(uint32_t val) {
     this->channelIrqFlags &= ~ack;
 }
 
-Channel Dma::getChannel(const Port &port) {
-    return this->channels[port];
+Channel* Dma::getChannel(const Port &port) {
+    return &(this->channels[port]);
 }
