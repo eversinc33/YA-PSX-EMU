@@ -116,6 +116,9 @@ void Gpu::gp0(const uint32_t& value)
         case 0xe5:
             this->gp0_drawing_offset(value);
             break;
+        case 0xe6:
+            this->gp0_mask_bit_setting(value);
+            break;
         default:
             DEBUG("Unhandled_GP0_command_0x" << std::hex << value);
             throw std::exception();
@@ -214,6 +217,13 @@ void Gpu::gp0_drawing_offset(const uint32_t& value)
     // Values are 11bit two's complement signed values so we need to shift the value to 16 bits to force sign extension
     this->drawing_x_offset = (int16_t)(x << 5) >> 5;
     this->drawing_y_offset = (int16_t)(y << 5) >> 5;
+}
+
+// GP0(0xE6): set mask bit setting
+void Gpu::gp0_mask_bit_setting(const uint32_t& value)
+{
+    this->force_set_mask_bit     = (value & 1) != 0;
+    this->preserve_masked_pixels = (value & 2) != 0;
 }
 
 // GP1(0x00): soft reset

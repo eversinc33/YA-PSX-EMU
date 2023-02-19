@@ -88,6 +88,7 @@ public:
     void gp0_set_drawing_area_top_left(const uint32_t& value);
     void gp0_set_drawing_area_bottom_right(const uint32_t& value);
     void gp0_drawing_offset(const uint32_t& value);
+    void gp0_mask_bit_setting(const uint32_t& value);
     void gp1_reset(const uint32_t& value);
     void gp1_dma_direction(const uint32_t& value);
     void gp1_display_mode(const uint32_t& value);
