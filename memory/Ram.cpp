@@ -39,7 +39,7 @@ uint8_t Ram::load8(const uint32_t &offset) {
     return this->data[offset];
 }
 
-void Ram::store16(const uint32_t &offset, const uint8_t &value) {
+void Ram::store16(const uint32_t &offset, const uint16_t &value) {
     auto b0 = (uint8_t) value;
     auto b1 = (uint8_t) (value >> 8u);
 

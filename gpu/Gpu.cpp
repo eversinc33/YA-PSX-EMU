@@ -20,14 +20,14 @@ uint32_t into_status(const uint8_t& hres)
 }
 
 // Retrieve value of the "read" register
-const uint32_t Gpu::read()
+uint32_t Gpu::read()
 {
     // Do not implement for now
     return 0;
 }
 
 // Retrieve value of the status register GPUSTAT. Read-Only register
-const uint32_t Gpu::status_read() 
+uint32_t Gpu::status_read() 
 {
     uint32_t regval = 0;
 
@@ -104,6 +104,12 @@ void Gpu::gp0(const uint32_t& value)
         case 0xe1:
             this->gp0_draw_mode(value);
             break;
+        case 0xe3:
+            this->gp0_set_drawing_area_top_left(value);
+            break;
+        case 0xe4:
+            this->gp0_set_drawing_area_bottom_right(value);
+            break;
         default:
             DEBUG("Unhandled_GP0_command_0x" << std::hex << value);
             throw std::exception();
@@ -166,6 +172,22 @@ void Gpu::gp0_draw_mode(const uint32_t& value)
     this->disable_textures         = ((value >> 11) & 1) != 0;
     this->rectangle_texture_x_flip = ((value >> 12) & 1) != 0;
     this->rectangle_texture_y_flip = ((value >> 13) & 1) != 0;
+}
+
+// GP0(0xE3): Set drawing area top left
+void Gpu::gp0_set_drawing_area_top_left(const uint32_t& value)
+{
+    this->drawing_area_top  = (uint16_t)((value >> 10) & 0x3ff);
+    this->drawing_area_left = (uint16_t)(value & 0x3ff);
+    DEBUG("Current Drawing area: " << std::dec << this->drawing_area_left << " " << this->drawing_area_top << ", " << this->drawing_area_bottom << " " << (uint32_t)(this->drawing_area_right));
+}
+
+// GP0(0xE4): Set drawing area bottom right
+void Gpu::gp0_set_drawing_area_bottom_right(const uint32_t& value)
+{
+    this->drawing_area_bottom = (uint16_t)((value >> 10) & 0x3ff);
+    this->drawing_area_right  = (uint16_t)(value & 0x3ff);
+    DEBUG("Current Drawing area: " << std::dec << this->drawing_area_left << " " << this->drawing_area_top << ", " << this->drawing_area_bottom << " " << (uint32_t)(this->drawing_area_right));
 }
 
 // GP1(0x00): soft reset

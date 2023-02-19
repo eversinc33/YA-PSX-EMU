@@ -343,8 +343,8 @@ void Interconnect::doDmaBlock(const Port &port) {
     DEBUG("Starting DMA block mode");
 
     Channel* channel = this->dma->getChannel(port);
-    uint8_t increment = (channel->getStepMode() == Increment) ? 4 : -4;
-    uint32_t addr = channel->base;
+    int8_t increment = (channel->getStepMode() == Increment) ? 4 : -4;
+    int32_t addr = int32_t(channel->base);
 
     // transfer size in words
     uint32_t transferSize = channel->getTransferSize();

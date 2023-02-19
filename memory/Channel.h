@@ -39,7 +39,7 @@ public:
     uint32_t base; // channels base address: address of first word to be read/written from/to RAM
     Direction direction;
 
-    Channel() : enable(false), direction(ToRam), step(Increment), sync(Manual), trigger(false), chop(false), chopDmaSz(0), chopCpuSz(0), dummy(0), base(0) {
+    Channel() :base(0), direction(ToRam), enable(false), step(Increment), sync(Manual), trigger(false), chop(false), chopDmaSz(0), chopCpuSz(0), dummy(0) {
     };
     ~Channel() {
         DEBUG("DESTRUCTED");
