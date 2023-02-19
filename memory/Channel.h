@@ -13,7 +13,7 @@ enum Direction {
 
 enum Step {
     Increment = 0,
-    Decrement = 0,
+    Decrement = 1,
 };
 
 enum Sync {

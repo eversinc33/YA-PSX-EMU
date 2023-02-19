@@ -22,7 +22,7 @@ void Channel::setControl(const uint32_t &value) {
     this->step = ((value >> 1) & 1) != 0 ? Decrement : Increment;
     this->chop = ((value >> 8) & 1) != 0;
     
-    DEBUG("SYNCMODE " << ((value >> 9) & 3));
+    DEBUG("SYNCMODE SET: " << ((value >> 9) & 3));
     switch((value >> 9) & 3) {
         case 0:
             DEBUG("SETTING SYNCMODE TO " << static_cast<int>(Manual))
@@ -49,7 +49,7 @@ void Channel::setControl(const uint32_t &value) {
 
     this->dummy = (uint8_t)((value >> 29) & 3);
 
-    DEBUG("SYNCMODE " << static_cast<int>(this->sync))
+    DEBUG("SYNCMODE OUT: " << this->sync);
 }
 
 void Channel::setBase(const uint32_t &value) {
@@ -81,7 +81,8 @@ bool Channel::isActive() const {
 }
 
 Sync Channel::getSyncMode() const {
-    DEBUG("SYNCMODE  : " << static_cast<int>(this->sync))
+    // TODO FIXME: this somehow always returns 0??
+    DEBUG("SYNCMODE IN GETTER: " << this->sync);
     return this->sync;
 }
 

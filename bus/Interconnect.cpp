@@ -30,7 +30,7 @@ uint32_t Interconnect::load32(const uint32_t& address) {
         auto minor = (offset & uint32_t(0xf)); 
         // Per-channel registers
         if (major <= 6) {
-            auto channel = this->dma->getChannel(Port(major));
+            Channel channel = this->dma->getChannel(Port(major));
             switch (minor) {
                 case 0:
                     return channel.base;
@@ -154,12 +154,12 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
     }
     if (DMA.contains(absAddr)) {
         uint32_t offset = (absAddr - DMA.start);
-        auto major = (offset & (uint32_t)0x70) >> 4;
-        auto minor = (offset & (uint32_t)0xf); 
+        uint32_t major = (offset & (uint32_t)0x70) >> 4;
+        uint32_t minor = (offset & (uint32_t)0xf); 
         // Per-channel registers
         if (major <= 6) {
             Port port = Port(major);
-            auto channel = this->dma->getChannel(port);
+            Channel channel = this->dma->getChannel(port);
             switch (minor) {
                 case 0:
                     channel.setBase(value);
@@ -342,16 +342,16 @@ void Interconnect::doDma(const Port &port) {
 void Interconnect::doDmaBlock(const Port &port) {
     DEBUG("Starting DMA block mode");
 
-    auto channel = this->dma->getChannel(port);
-    auto increment = (channel.getStepMode() == Increment) ? 4 : -4;
-    auto addr = channel.base;
+    Channel channel = this->dma->getChannel(port);
+    uint8_t increment = (channel.getStepMode() == Increment) ? 4 : -4;
+    uint32_t addr = channel.base;
 
     // transfer size in words
-    auto transferSize = channel.getTransferSize();
+    uint32_t transferSize = channel.getTransferSize();
 
     while (transferSize > 0) {
         // mask addr to ignore the two LSBs
-        auto currentAddr = addr & 0x1ffffc;
+        uint32_t currentAddr = addr & 0x1ffffc;
         uint32_t srcWord;
 
         switch(channel.direction) {
