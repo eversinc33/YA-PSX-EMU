@@ -82,12 +82,12 @@ public:
     const uint32_t status_read();
     void gp0(const uint32_t& value);
     void gp0_draw_mode(const uint32_t& value);
+    void gp1_reset(const uint32_t& value);
 
 private:
     Renderer* renderer;
 
-    // Texture page base X coord (4 bits, 64 bytes increment)
-    uint8_t page_base_x;
+    uint8_t page_base_x; // Texture page base X coord (4 bits, 64 bytes increment)
     uint8_t page_base_y; // 1 bit, 256 line increment
     uint8_t semi_transparency;
     TextureDepth texture_depth; // texture page color depth
@@ -108,6 +108,23 @@ private:
 
     bool rectangle_texture_x_flip;
     bool rectangle_texture_y_flip;
+
+    uint8_t texture_window_x_mask; // 8 px steps
+    uint8_t texture_window_y_mask; // 8 px steps
+    uint8_t texture_window_x_offset; // 8 px steps
+    uint8_t texture_window_y_offset; // 8 px steps
+    uint16_t drawing_area_left; // leftmost col of drawing area
+    uint16_t drawing_area_top; // topmost col of drawing area
+    uint16_t drawing_area_right; // ...
+    uint16_t drawing_area_bottom; 
+    int16_t drawing_x_offset; // horizontal drawing offset applied to all vertices
+    int16_t drawing_y_offset;
+    uint16_t display_vram_x_start; // first col of the display are in VRAM
+    uint16_t display_vram_y_start; // first line of the display are in VRAM
+    uint16_t display_horiz_start; // display output horizontal start relative to HSYNC
+    uint16_t display_horiz_end;
+    uint16_t display_line_start; // display output first line relative to VSYNC
+    uint16_t display_line_end;
 };
 
 #endif

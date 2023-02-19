@@ -134,3 +134,46 @@ void Gpu::gp0_draw_mode(const uint32_t& value)
     this->rectangle_texture_x_flip = ((value >> 12) & 1) != 0;
     this->rectangle_texture_y_flip = ((value >> 13) & 1) != 0;
 }
+
+// GP1(0x00): soft reset
+void Gpu::gp1_reset(const uint32_t& value)
+{
+    this->interrupted = false;
+    this->page_base_x = 0;
+    this->page_base_y = 0;
+    this->semi_transparency = 0;
+    this->texture_depth = T4Bit;
+    this->texture_window_x_mask = 0;
+    this->texture_window_y_mask = 0;
+    this->texture_window_x_offset = 0;
+    this->texture_window_y_offset = 0;
+    this->dithering = false;
+    this->draw_to_display = false;
+    this->disable_textures = false;
+    this->rectangle_texture_x_flip = false;
+    this->rectangle_texture_y_flip = false;
+    this->drawing_area_left = 0;
+    this->drawing_area_top = 0;
+    this->drawing_area_bottom = 0;
+    this->drawing_area_right = 0;
+    this->drawing_x_offset = 0;
+    this->drawing_y_offset = 0;
+    this->force_set_mask_bit = false;
+    this->preserve_masked_pixels = false;
+    this->dma_direction = Off;
+    this->display_disabled = true;
+    this->display_vram_x_start = 0;
+    this->display_vram_y_start = 0;
+    this->hres = from_fields(0, 0);
+    this->vres = Y240Lines;
+    this->vmode = NTSC;
+    this->interlaced = true;
+    this->display_horiz_start = 0x200;
+    this->display_horiz_end = 0xC00;
+    this->display_line_start = 0x10;
+    this->display_line_end = 0x100;
+    this->display_depth = D15Bits;
+
+    // TODO: clear command FIFO when implemented
+    // TODO: invalidate GPU cache when implemented
+}
