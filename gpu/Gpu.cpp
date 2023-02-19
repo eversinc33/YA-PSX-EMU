@@ -138,13 +138,18 @@ void Gpu::gp1(const uint32_t& value)
         case 0x04:
             this->gp1_dma_direction(value);
             break;
+        case 0x05:
+            this->gp1_display_vram_start(value);
+            break;
+        case 0x06:
+            this->gp1_display_horizontal_range(value);
+            break;
+        case 0x07:
+            this->gp1_display_vertical_range(value);
+            break;
         case 0x08:
             this->gp1_display_mode(value);
             break; 
-        case 0xE3:
-            DEBUG("YES" << std::hex << value);
-            throw std::exception();
-            break;
         default:
             DEBUG("Unhandled_GP1_command_0x" << std::hex << value);
             throw std::exception();
@@ -269,27 +274,6 @@ void Gpu::gp1_reset(const uint32_t& value)
     // TODO: invalidate GPU cache when implemented
 }
 
-// GP1(0x80): Set display mode
-void Gpu::gp1_display_mode(const uint32_t& value)
-{
-    uint8_t hr1 = (uint8_t)(value & 3);
-    uint8_t hr2 = (uint8_t)((value >> 6) & 1);
-
-    this->hres = from_fields(hr1, hr2);
-
-    this->vres          = ((value & 0x4) != 0) ? Y480Lines : Y240Lines;
-    this->vmode         = ((value & 0x8) != 0) ? NTSC : PAL;
-    this->display_depth = ((value & 0x10) != 0) ? D24Bits : D15Bits; 
-
-    this->interlaced = (value & 0x20) != 0;
-
-    if ((value & 0x80) != 0) 
-    {
-        DEBUG("Unsupported_display_mode_0x" << std::hex << value);
-        throw std::exception();
-    }
-}
-
 // GP1(0x04): DMA Direction
 void Gpu::gp1_dma_direction(const uint32_t& value)
 {
@@ -311,5 +295,47 @@ void Gpu::gp1_dma_direction(const uint32_t& value)
             DEBUG("Unhandled_DMA_direction_0x" << std::hex << value);
             throw std::exception();
             break;
+    }
+}
+
+// GP1 (0x05): Display VRAM Start
+void Gpu::gp1_display_vram_start(const uint32_t& value)
+{
+    this->display_vram_x_start = (uint16_t)(value & 0x3fe);
+    this->display_vram_y_start = (uint16_t)((value >> 10) & 0x1ff);
+}
+
+// GP1(0x06): Display horizontal range
+void Gpu::gp1_display_horizontal_range(const uint32_t& value)
+{
+    this->display_horiz_start = (uint16_t)(value & 0xfff);
+    this->display_horiz_end   = (uint16_t)((value >> 12) & 0xfff);
+}
+
+// GP1(0x07): Display vertical range
+void Gpu::gp1_display_vertical_range(const uint32_t& value)
+{
+    this->display_line_start = (uint16_t)(value & 0x3ff);
+    this->display_line_end   = (uint16_t)((value >> 10) & 0x3ff);
+}
+
+// GP1(0x80): Set display mode
+void Gpu::gp1_display_mode(const uint32_t& value)
+{
+    uint8_t hr1 = (uint8_t)(value & 3);
+    uint8_t hr2 = (uint8_t)((value >> 6) & 1);
+
+    this->hres = from_fields(hr1, hr2);
+
+    this->vres          = ((value & 0x4) != 0) ? Y480Lines : Y240Lines;
+    this->vmode         = ((value & 0x8) != 0) ? NTSC : PAL;
+    this->display_depth = ((value & 0x10) != 0) ? D24Bits : D15Bits; 
+
+    this->interlaced = (value & 0x20) != 0;
+
+    if ((value & 0x80) != 0) 
+    {
+        DEBUG("Unsupported_display_mode_0x" << std::hex << value);
+        throw std::exception();
     }
 }
