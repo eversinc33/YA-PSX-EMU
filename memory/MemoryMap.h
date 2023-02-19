@@ -14,6 +14,6 @@ const Range IRQ_CONTROL = Range(0x1f801070, 8); // interrupt control registers (
 const Range TIMERS = Range(0x1f801100,48); // the playstation has three independent timers at these regsters
 const Range GPU = Range(0x1f801810, 8);
 const Range DMA = Range(0x1f801080,0x80); // dma, direct memory access
-const Range CDROM = Range(0x1f801800,4); // CD ROM status registers etc.
+const Range CDROM_STATUS = Range(0x1f801800, 8); // CD ROM status registers etc.
 
 #endif //PSXEMU_MEMORYMAP_H

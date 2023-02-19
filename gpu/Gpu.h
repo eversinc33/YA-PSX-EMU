@@ -67,7 +67,8 @@ public:
           interlaced(false),
           display_disabled(true),
           interrupted(false),
-          dma_direction(Off)
+          dma_direction(Off),
+          rectangle_texture_x_flip(false), rectangle_texture_y_flip(false)
     {
         // Setup renderer
         this->renderer = new Renderer();
@@ -79,6 +80,8 @@ public:
     ~Gpu();
 
     const uint32_t status_read();
+    void gp0(const uint32_t& value);
+    void gp0_draw_mode(const uint32_t& value);
 
 private:
     Renderer* renderer;
@@ -102,6 +105,9 @@ private:
     bool display_disabled;
     bool interrupted;
     DmaDirection dma_direction;
+
+    bool rectangle_texture_x_flip;
+    bool rectangle_texture_y_flip;
 };
 
 #endif

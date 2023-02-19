@@ -196,7 +196,17 @@ void Interconnect::store32(const uint32_t& address, const uint32_t& value) {
         }
     }
     if (GPU.contains(absAddr)) {
-        debug("STUB:Unhandled_write_to_GPU_register:0x" << std::hex << absAddr);
+        uint32_t offset = (absAddr - GPU.start);
+        switch (offset) 
+        {
+            case 0:
+                this->gpu->gp0(value);
+                break;
+            default:
+                debug("STUB:Unhandled_GPU_Write_to_location:0x" << std::hex << offset << "_value:0x" << std::hex << value);
+                throw std::exception();
+                break;
+        }
         return;
     }
     if (TIMERS.contains(absAddr)) {
@@ -225,6 +235,10 @@ void Interconnect::store8(const uint32_t &address, const uint8_t &value) {
     }
     if (EXPANSION_2.contains(absAddr)) {
         debug("STUB:Unhandled_write_to_EXPANSION_2_register:0x" << std::hex << value);
+        return;
+    }
+    if (CDROM_STATUS.contains(absAddr)) {
+        debug("STUB:Unhandled_write_to_CDROM_STATUS_register:0x" << std::hex << value);
         return;
     }
 

@@ -86,3 +86,51 @@ const uint32_t Gpu::status_read()
 
     return regval;
 }
+
+// Handles write to the GP0 command register
+void Gpu::gp0(const uint32_t& value)
+{
+    uint32_t opcode = (value >> 24) & 0xff;
+
+    switch (opcode) {
+        case 0x00: break; // NOP
+        case 0xe1:
+            this->gp0_draw_mode(value);
+            break;
+        default:
+            debug("Unhandled_GP0_command_0x" << std::hex << value);
+            throw std::exception();
+            break;
+    }
+}
+
+// GP0(0xE1) command
+void Gpu::gp0_draw_mode(const uint32_t& value)
+{
+    this->page_base_x = (uint8_t)(value & 0xf);
+    this->page_base_y = (uint8_t)((value >> 4) & 1);
+    this->semi_transparency = (uint8_t)((value >> 5) & 3);
+
+    switch((value >> 7) & 3) 
+    {
+        case 0:
+            this->texture_depth = T4Bit;
+            break;
+        case 1:
+            this->texture_depth = T8Bit;
+            break;
+        case 2:
+            this->texture_depth = T15Bit;
+            break;
+        default:
+            debug("Unhandled_texture_depth:0x" << std::hex << ((value >> 7) & 3));
+            throw std::exception();
+            break;
+    }
+
+    this->dithering                = ((value >> 9) & 1) != 0;
+    this->draw_to_display          = ((value >> 10) & 1) != 0;
+    this->disable_textures         = ((value >> 11) & 1) != 0;
+    this->rectangle_texture_x_flip = ((value >> 12) & 1) != 0;
+    this->rectangle_texture_y_flip = ((value >> 13) & 1) != 0;
+}

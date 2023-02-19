@@ -12,11 +12,11 @@ int main() {
     Bios bios = Bios(FNAME, BUFFERSIZE);
     Ram ram = Ram();
     Dma dma = Dma();
+    Gpu gpu = Gpu();
 
-    Interconnect interconnect = Interconnect(&bios, &ram, &dma);
+    Interconnect interconnect = Interconnect(&bios, &ram, &dma, &gpu);
 
     Cpu cpu = Cpu(&interconnect);
-    Gpu gpu = Gpu();
 
     while (1) {
         cpu.runNextInstruction();
