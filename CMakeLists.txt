@@ -12,6 +12,8 @@ ELSE()
     Message(FATAL_ERROR "SDL2 NOT FOUND")
 ENDIF()
 
+find_package(OpenGL REQUIRED)
+
 include_directories(PSXEMU ${SDL2_INCLUDE_DIRS})
 
 add_executable(PSXEMU
@@ -40,6 +42,8 @@ add_executable(PSXEMU
     gpu/Renderer.cpp
     gpu/Renderer.h
     gpu/Constants.h
+    gpu/CommandBuffer.cpp
+    gpu/CommandBuffer.h
 )
 
-target_link_libraries(PSXEMU SDL2::SDL2) # ${SDL2_LIBRARY})
+target_link_libraries(PSXEMU SDL2::SDL2 OpenGL::GL) # ${SDL2_LIBRARY})

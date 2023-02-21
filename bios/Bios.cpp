@@ -16,6 +16,7 @@ uint32_t Bios::load32(const uint32_t& offset) const {
 }
 
 void Bios::readBinary(const char* fname, const uint32_t& fileLen) {
+    // TODO: move to util/filesystem
     FILE *file;
 
     //Open file

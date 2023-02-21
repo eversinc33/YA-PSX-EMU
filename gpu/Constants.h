@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-const uint8_t SCREEN_WIDTH_PX = uint8_t(640);
-const uint8_t SCREEN_HEIGHT_PX = uint8_t(480);
+const uint16_t SCREEN_WIDTH_PX = 1024;
+const uint16_t SCREEN_HEIGHT_PX = 512;
 
 #endif

@@ -1,6 +1,7 @@
 #include "Gpu.h"
 #include "../util/logging.h"
 #include <exception>
+#include "CommandBuffer.h"
 
 Gpu::~Gpu()
 {
@@ -43,6 +44,7 @@ uint32_t Gpu::status_read()
     // bit 14: not supported - seems to not be in use anyway
     regval |= ((uint32_t)this->disable_textures) << 15;
     regval |= into_status(this->hres);
+    // FIXME: might need to disable this if bootlocked
     regval |= ((uint32_t)this->vres) << 19;
     regval |= ((uint32_t)this->vmode) << 20;
     regval |= ((uint32_t)this->display_depth) << 21;
@@ -97,30 +99,98 @@ uint32_t Gpu::status_read()
 // Handles write to the GP0 command register
 void Gpu::gp0(const uint32_t& value)
 {
-    uint32_t opcode = (value >> 24) & 0xff;
+    // if a new command should be fetched
+    if (this->current_command.words_remaining == 0)
+    {
+        uint32_t opcode = (value >> 24) & 0xff;
 
-    switch (opcode) {
-        case 0x00: break; // NOP
-        case 0xe1:
-            this->gp0_draw_mode(value);
+        switch (opcode) {
+            case 0x00: 
+                this->current_command.command_method = &Gpu::gp0_nop;
+                this->current_command.command.len    = 1;
+                break;
+            case 0x01:
+                this->current_command.command_method = &Gpu::gp0_clear_cache;
+                this->current_command.command.len    = 1;
+                break;
+            case 0x28:
+                this->current_command.command_method = &Gpu::gp0_quad_mono_opaque;
+                this->current_command.command.len    = 5;
+                break;
+            case 0x2c:
+                this->current_command.command_method = &Gpu::gp0_quad_texture_blend_opaque;
+                this->current_command.command.len    = 9;
+                break;
+            case 0x30:
+                this->current_command.command_method = &Gpu::gp0_triangle_shaded_opaque;
+                this->current_command.command.len    = 6;
+                break;
+            case 0x38:
+                this->current_command.command_method = &Gpu::gp0_quad_shaded_opaque;
+                this->current_command.command.len    = 8;
+                break;
+            case 0xa0:
+                this->current_command.command_method = &Gpu::gp0_image_load;
+                this->current_command.command.len    = 3; // param 2 and 3 are used to calculate num of words used in transfer
+                break;
+            case 0xc0:
+                this->current_command.command_method = &Gpu::gp0_image_store;
+                this->current_command.command.len    = 3; // just as 0xA0
+            case 0xe1:
+                this->current_command.command_method = &Gpu::gp0_draw_mode;
+                this->current_command.command.len    = 1;
+                break;
+            case 0xe2:
+                this->current_command.command_method = &Gpu::gp0_texture_window;
+                this->current_command.command.len    = 1;
+                break;
+            case 0xe3:
+                this->current_command.command_method = &Gpu::gp0_set_drawing_area_top_left;
+                this->current_command.command.len    = 1;
+                break;
+            case 0xe4:
+                this->current_command.command_method = &Gpu::gp0_set_drawing_area_bottom_right;
+                this->current_command.command.len    = 1;
+                break;
+            case 0xe5:
+                this->current_command.command_method = &Gpu::gp0_drawing_offset;
+                this->current_command.command.len    = 1;
+                break;
+            case 0xe6:
+                this->current_command.command_method = &Gpu::gp0_mask_bit_setting;
+                this->current_command.command.len    = 1;
+                break;
+            default:
+                DEBUG("Unhandled_GP0_command_0x" << std::hex << value);
+                throw std::exception();
+                break;
+        }
+        this->current_command.words_remaining = this->current_command.command.len;
+        this->current_command.command.clear();
+    }
+
+    this->current_command.words_remaining--;
+
+    switch (this->gp0_mode) 
+    {
+        case GP0Mode::Command:
+            this->current_command.command.push_word(value);
+            if (this->current_command.words_remaining == 0)
+            {
+                // we have all parameters from the buffer so we can run the command
+                (this->*(this->current_command.command_method))(value);
+            }
             break;
-        case 0xe2:
-            this->gp0_texture_window(value);
-            break;
-        case 0xe3:
-            this->gp0_set_drawing_area_top_left(value);
-            break;
-        case 0xe4:
-            this->gp0_set_drawing_area_bottom_right(value);
-            break;
-        case 0xe5:
-            this->gp0_drawing_offset(value);
-            break;
-        case 0xe6:
-            this->gp0_mask_bit_setting(value);
+        case GP0Mode::ImageLoad:
+            // TODO: copy pixel data to VRAM
+            // TODO FIXME : might need to refactor here and loose the struct
+            if (this->current_command.words_remaining == 0)
+            {
+                this->gp0_mode = GP0Mode::Command;
+            }
             break;
         default:
-            DEBUG("Unhandled_GP0_command_0x" << std::hex << value);
+            DEBUG("ERROR:invalid_gp0_mode");
             throw std::exception();
             break;
     }
@@ -135,6 +205,15 @@ void Gpu::gp1(const uint32_t& value)
         case 0x00: 
             this->gp1_reset(value);
             break; 
+        case 0x01:
+            this->gp1_reset_command_buffer(value);
+            break;
+        case 0x02:
+            this->gp1_acknowledge_irq(value);
+            break;
+        case 0x03:
+            this->gp1_display_enable(value);
+            break;
         case 0x04:
             this->gp1_dma_direction(value);
             break;
@@ -155,6 +234,92 @@ void Gpu::gp1(const uint32_t& value)
             throw std::exception();
             break;
     }
+}
+
+// GP0(0x00): NOP
+void Gpu::gp0_nop(const uint32_t& value)
+{
+    return;
+}
+
+// GP0(0x01): Clear texture cache
+void Gpu::gp0_clear_cache(const uint32_t& value)
+{
+    DEBUG("STUB:gp0_clear_texture_cache");
+}
+
+// GP0(0x28): Monochrome Opaque Quadrilateral
+void Gpu::gp0_quad_mono_opaque(const uint32_t& value)
+{
+    DEBUG("STUB:gp0_draw_quad");
+}
+
+// GP0(0x2C): Textured Opaque Quadrilateral
+void Gpu::gp0_quad_texture_blend_opaque(const uint32_t& value)
+{
+    DEBUG("STUB:gpß_draw_quad_texture_blending");
+}
+
+// GP0(0x30): Shaded Opaque Triangle
+void Gpu::gp0_triangle_shaded_opaque(const uint32_t& value)
+{
+    Position positions[3] = {
+        pos_from_gp0(this->current_command.command[1]),
+        pos_from_gp0(this->current_command.command[3]),
+        pos_from_gp0(this->current_command.command[5])
+    };
+
+    Color colors[3] = {
+        color_from_gp0(this->current_command.command[0]),
+        color_from_gp0(this->current_command.command[2]),
+        color_from_gp0(this->current_command.command[4])
+    };
+
+    this->renderer->push_triangle(positions, colors);
+}
+
+// GP0(0x38): Shaded Opaque Quadrilateral
+void Gpu::gp0_quad_shaded_opaque(const uint32_t& value)
+{
+    DEBUG("STUB:gp0_draw_quad_shaded");
+}
+
+// GP0(0xA0): Image load
+void Gpu::gp0_image_load(const uint32_t& value)
+{
+    // param 2: image resolution:
+    uint32_t image_resolution = this->current_command.command[2];
+
+    uint32_t width = image_resolution & 0xffff;
+    uint32_t height = image_resolution >> 16;
+
+    // imgsize in 16bit pixels
+    uint32_t image_size = width * height;
+    // odd number of pixels then round up, since we transfer 32 bits
+    if (image_size % 2 != 0) 
+    {
+        image_size++;
+    }
+    DEBUG("Loading_image_with_size:" << image_size);
+
+    // store num of words expected for this image
+    this->current_command.words_remaining = image_size / 2;
+
+    // put G0 to image load mode
+    this->gp0_mode = GP0Mode::ImageLoad;
+
+    DEBUG("STUB:load_image");
+}
+
+// GP0(0xC0): image store
+void Gpu::gp0_image_store(const uint32_t& value)
+{
+    uint32_t image_resolution = this->current_command.command[2];
+
+    uint32_t width = image_resolution & 0xffff;
+    uint32_t height = image_resolution >> 16;
+
+    DEBUG("STUB:Unhandled_image_store_with_size:" << width << "," << height);
 }
 
 // GP0(0xE1) command
@@ -222,6 +387,9 @@ void Gpu::gp0_drawing_offset(const uint32_t& value)
     // Values are 11bit two's complement signed values so we need to shift the value to 16 bits to force sign extension
     this->drawing_x_offset = (int16_t)(x << 5) >> 5;
     this->drawing_y_offset = (int16_t)(y << 5) >> 5;
+
+    // TODO: FIXME: temporary hack to render screen, fix when timing is implemented
+    this->renderer->display();
 }
 
 // GP0(0xE6): set mask bit setting
@@ -270,8 +438,19 @@ void Gpu::gp1_reset(const uint32_t& value)
     this->display_line_end = 0x100;
     this->display_depth = D15Bits;
 
-    // TODO: clear command FIFO when implemented
+    // Also clear command buffer
+    this->gp1_reset_command_buffer(0);
+
     // TODO: invalidate GPU cache when implemented
+}
+
+// GP1(0x01): Reset Command Buffer
+void Gpu::gp1_reset_command_buffer(const uint32_t& value)
+{
+    this->current_command.command.clear();
+    this->current_command.words_remaining = 0;
+    this->gp0_mode = GP0Mode::Command;
+    // TODO: clear command FIFO when implemented
 }
 
 // GP1(0x04): DMA Direction
@@ -296,6 +475,18 @@ void Gpu::gp1_dma_direction(const uint32_t& value)
             throw std::exception();
             break;
     }
+}
+
+// GP1 (0x02): Acknowledge interrupt
+void Gpu::gp1_acknowledge_irq(const uint32_t& value)
+{
+    this->interrupted = true;
+}
+
+// GP1 (0x03): Display enable
+void Gpu::gp1_display_enable(const uint32_t& value)
+{
+    this->display_disabled = (value & 1) !=0;
 }
 
 // GP1 (0x05): Display VRAM Start

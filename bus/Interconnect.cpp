@@ -359,7 +359,7 @@ void Interconnect::doDmaBlock(const Port &port) {
                 srcWord = this->ram->load32(currentAddr);
                 switch(port) {
                     case Gpu_port:
-                        DEBUG("STUB:Gpu_data_0x" << std::hex << srcWord);
+                        this->gpu->gp0(srcWord);
                         break;
                     default:
                         DEBUG("Unhandled_FROM_RAM_dma_direction");

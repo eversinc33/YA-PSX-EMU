@@ -1,8 +1,30 @@
 #ifndef GPU_H
 #define GPU_H
-#include "Renderer.h"
-#include <exception>
+
 #pragma once
+
+#include "Renderer.h"
+#include "CommandBuffer.h"
+#include <exception>
+
+class Gpu;
+typedef void (Gpu::*Gpu_operation)(const uint32_t& value);
+
+struct GPUCommand {
+    CommandBuffer command;
+    uint32_t words_remaining;
+    Gpu_operation command_method;
+    GPUCommand() 
+    {
+        this->command = CommandBuffer();
+        this->words_remaining = 0;
+    };
+};
+
+enum GP0Mode {
+    Command, // Default mode: handling commands
+    ImageLoad // load image to VRAM
+};
 
 // Depth of pixel values in a texture page
 enum TextureDepth {
@@ -52,7 +74,9 @@ class Gpu
 {
 public:
     Gpu() // We are assuming default values of 0 here
-        : page_base_x(0), page_base_y(0),
+        : gp0_mode(Command),
+          current_command(GPUCommand()), 
+          page_base_x(0), page_base_y(0),
           semi_transparency(0), texture_depth(T4Bit),
           dithering(false),
           draw_to_display(false),
@@ -72,25 +96,34 @@ public:
     {
         // Setup renderer
         this->renderer = new Renderer();
-        if (!this->renderer->init_sdl())
-        {
-            throw std::exception();
-        }
     };
     ~Gpu();
 
+    GP0Mode gp0_mode;
+    GPUCommand current_command;
     uint32_t status_read();
     uint32_t read();
     void gp0(const uint32_t& value);
     void gp1(const uint32_t& value);
+    void gp0_nop(const uint32_t& value);
+    void gp0_clear_cache(const uint32_t& value);
+    void gp0_quad_mono_opaque(const uint32_t& value);
+    void gp0_quad_shaded_opaque(const uint32_t& value);
+    void gp0_quad_texture_blend_opaque(const uint32_t& value);
+    void gp0_triangle_shaded_opaque(const uint32_t& value);
+    void gp0_image_load(const uint32_t& value);
+    void gp0_image_store(const uint32_t& value);
     void gp0_draw_mode(const uint32_t& value);
     void gp0_texture_window(const uint32_t& value);
     void gp0_set_drawing_area_top_left(const uint32_t& value);
     void gp0_set_drawing_area_bottom_right(const uint32_t& value);
     void gp0_drawing_offset(const uint32_t& value);
     void gp0_mask_bit_setting(const uint32_t& value);
+    void gp1_reset_command_buffer(const uint32_t& value);
     void gp1_display_horizontal_range(const uint32_t& value);
     void gp1_display_vertical_range(const uint32_t& value);
+    void gp1_acknowledge_irq(const uint32_t& value);
+    void gp1_display_enable(const uint32_t& value);
     void gp1_display_vram_start(const uint32_t& value);
     void gp1_reset(const uint32_t& value);
     void gp1_dma_direction(const uint32_t& value);
