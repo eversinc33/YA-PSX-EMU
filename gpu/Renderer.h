@@ -64,10 +64,13 @@ const uint32_t VERTEX_BUFFER_LEN = 64 * 1024; // max n of vertices that can be s
 template <class T>
 class Buffer {
 public:
-    GLuint object; // buffer object
+    GLuint object = 0; // buffer object
     T* map; // mapped buffer memory
 
     Buffer() {
+    };
+    
+    void create() {
         glGenBuffers(1, &object);
         glBindBuffer(GL_ARRAY_BUFFER, object);
         GLsizeiptr element_size = (GLsizeiptr)(sizeof(T));

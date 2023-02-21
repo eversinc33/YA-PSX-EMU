@@ -6,20 +6,22 @@
 
 GLuint compile_shader(const std::string& data, const GLenum& shader_type)
 {
-    auto shader = glCreateShader(shader_type);
+    GLuint shader = glCreateShader(shader_type);
 
     // compile
     const char *c_str = data.c_str();
-    glShaderSource(shader, 1, &c_str, nullptr);
+    glShaderSource(shader, 1, &c_str, NULL);
     glCompileShader(shader);
 
     // check for errors
-    auto status = GL_FALSE;
+    GLint status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if (status != GL_TRUE) {
-        DEBUG("ERROR:GL_Shader_compilation_failed");
+    if (status == GL_FALSE) {
+        DEBUG("ERROR:GL_Shader_compilation_failed:" << status);
         throw std::exception();
     }
+
+    DEBUG("Compiled_shader");
 
     return shader;
 }
@@ -81,13 +83,15 @@ Renderer::Renderer()
 
     // Set up Positions buffer
     this->positions = Buffer<Position>();
+    this->positions.create();
     auto index = find_program_attrib(program, "vertex_position");
     glEnableVertexAttribArray(index);
     // 2 GLShort attributes, not normalized
     glVertexAttribIPointer(index, 2, GL_SHORT, 0, nullptr);
 
     // Set up Color buffer
-    this->positions = Buffer<Position>();
+    this->colors = Buffer<Color>();
+    this->colors.create();
     index = find_program_attrib(program, "vertex_color");
     glEnableVertexAttribArray(index);
     // 3 GLubyte attributes, not normalized
