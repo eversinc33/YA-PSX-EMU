@@ -3,6 +3,7 @@
 #include "../util/filesystem.h"
 #include "Constants.h"
 #include <exception>
+#include <vector>
 
 GLuint compile_shader(const std::string& data, const GLenum& shader_type)
 {
@@ -18,6 +19,15 @@ GLuint compile_shader(const std::string& data, const GLenum& shader_type)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if (status == GL_FALSE) {
         DEBUG("ERROR:GL_Shader_compilation_failed:" << status);
+        // get reason
+        GLint max_length = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
+        std::vector<GLchar> error_log(max_length);
+        glGetShaderInfoLog(shader, max_length, &max_length, &error_log[0]);
+        for (const auto& c : error_log) 
+        {
+            std::cout << c;
+        }
         throw std::exception();
     }
 
@@ -108,8 +118,16 @@ bool Renderer::init_sdl()
     SDL_Init(SDL_INIT_VIDEO);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#ifdef __APPLE__
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#endif
 
+#ifdef __APPLE__
+    this->window = SDL_CreateWindow("PSX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH_PX, SCREEN_HEIGHT_PX, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+#else
     this->window = SDL_CreateWindow("PSX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH_PX, SCREEN_HEIGHT_PX, SDL_WINDOW_SHOWN);
+#endif
     if (this->window == NULL)
     {
         DEBUG("Window could not be created! SDL_Error: " << SDL_GetError());
@@ -126,9 +144,9 @@ void Renderer::display()
 {
     this->draw();
     SDL_GL_SwapWindow(this->window);
+    this->poll();
 }
 
-#ifdef DEPRECATED
 void Renderer::poll()
 {
     SDL_Event e; 
@@ -157,7 +175,6 @@ void Renderer::poll()
         SDL_Quit();
     }
 }
-#endif
 
 void Renderer::draw() 
 {

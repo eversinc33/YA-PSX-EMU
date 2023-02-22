@@ -275,6 +275,7 @@ void Gpu::gp0_triangle_shaded_opaque(const uint32_t& value)
         color_from_gp0(this->current_command.command[4])
     };
 
+    DEBUG("Drawing_triangle_shaded_opaque");
     this->renderer->push_triangle(positions, colors);
 }
 
@@ -389,6 +390,7 @@ void Gpu::gp0_drawing_offset(const uint32_t& value)
     this->drawing_y_offset = (int16_t)(y << 5) >> 5;
 
     // TODO: FIXME: temporary hack to render screen, fix when timing is implemented
+    DEBUG("RENDER----------------------------------")
     this->renderer->display();
 }
 

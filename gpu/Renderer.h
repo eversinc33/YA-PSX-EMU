@@ -8,6 +8,7 @@
 #include <OpenGL/gl3.h>
 #include "../util/logging.h"
 #include "../util/filesystem.h"
+#include <cstring>
 
 #ifndef GL_MAP_WRITE_BIT
 #define GL_MAP_WRITE_BIT 0x0002
@@ -81,9 +82,14 @@ public:
 #else 
         glBufferStorage(GL_ARRAY_BUFFER, buffer_size, NULL, access);
 #endif
-        auto memory = glMapBufferRange(GL_ARRAY_BUFFER, 0, buffer_size, access);
         // TODO: reset buffer to zero memory
-        this->map = (T*)memory;
+        this->map = (T*)glMapBufferRange(GL_ARRAY_BUFFER, 0, buffer_size, access);
+        if (this->map == NULL)
+        {
+            DEBUG("ERROR:gl_buffer_range_mapped_is_null");
+            throw std::exception();
+        }
+        DEBUG("MAP:" << this->map)
     }
 
     ~Buffer() {
@@ -92,14 +98,14 @@ public:
         glDeleteBuffers(1, &this->object);
     }
 
-    void set(const uint32_t &index, const T& value)
+    void set(const uint32_t& index, const T& value)
     {
-        if (index >= VERTEX_BUFFER_LEN) 
+        if (index >= VERTEX_BUFFER_LEN)
         {
             DEBUG("BUFFER_OVERLOAD");
             throw std::exception();
         }
-
+        
         this->map[index] = value; // TODO CHECK does this work like this?
     }
 };
