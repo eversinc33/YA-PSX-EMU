@@ -11,31 +11,51 @@ Spunit::~Spunit()
 
 }
 
-uint16_t Spunit::load16(uint32_t offset)
+void Spunit::set_voice_register(uint8_t voice, uint16_t value)
 {
-    if (offset < 384) // 0x00-0x180: voice registers
-    {
-        uint16_t target_voice = offset % 16;
-        uint16_t val = this->voice_regs[target_voice];
-        DEBUG("load_16_from_voice:" << std::dec << target_voice << ":" << val);
-        return val;
-    } 
 
-    DEBUG("...................................." << offset);
-    DEBUG("STUB:Unhandled_read_from_SPU_register_at_offset:_0x" << std::hex << offset);
-    return 0;
 }
 
-
-void Spunit::store16(uint32_t offset, uint16_t value)
+uint16_t Spunit::get_voice_register(uint8_t voice)
 {
-    if (offset < 384) // 0x00-0x180: voice registers
-    {
-        uint16_t target_voice = offset % 16;
-        this->voice_regs[target_voice] = value;
-        DEBUG("store_16_to_voice:" << std::dec << target_voice << ":" << value);
-        return;
-    } 
+    return 0; // TODO
+}
 
-    DEBUG("STUB:Unhandled_write_to_SPU_register:0x" << std::hex << offset);
+void Spunit::set_spu_control_1(const uint16_t& value)
+{
+    // Set SPU control register
+    // TODO: parse values into members
+    this->spu_control_1 = value;
+}
+
+void Spunit::set_spu_status(const uint16_t& value)
+{
+    // Set SPU status register
+    this->spu_status = value;
+}
+
+void Spunit::set_master_volume_left(const uint16_t& value)
+{
+    this->master_volume_left = value;
+}
+
+void Spunit::set_master_volume_right(const uint16_t& value)
+{
+    this->master_volume_right = value;
+}
+
+void Spunit::set_reverb_depth_left(const uint16_t& value)
+{
+    this->reverb_depth_left = value;
+}
+
+void Spunit::set_reverb_depth_right(const uint16_t& value)
+{
+    this->reverb_depth_right = value;
+}
+
+void Spunit::stop_sound_play(const uint32_t& value)
+{
+    // TODO: parse and stop channels accordingly. Write Only 
+    DEBUG("STUB:stop_sound_play");
 }

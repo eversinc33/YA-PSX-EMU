@@ -28,26 +28,40 @@ class Spunit
 {
 public:
     const uint32_t START_ADDRESS = 0x1f801c00;
-    const uint16_t MEM_SIZE = 640;
+    const uint16_t SIZE = 640;
 
     Spunit(); 
     ~Spunit();
 
-    Range range = Range(START_ADDRESS, MEM_SIZE);
+    Range range = Range(START_ADDRESS, SIZE);
 
-    uint16_t load16(uint32_t address);
-    void store16(uint32_t offset, uint16_t value);
+    void set_voice_register(uint8_t voice, uint16_t value);
+    uint16_t get_voice_register(uint8_t voice);
+
+    // registers
+    void set_master_volume_left(const uint16_t& value);
+    void set_master_volume_right(const uint16_t& value);
+    void set_reverb_depth_left(const uint16_t& value);
+    void set_reverb_depth_right(const uint16_t& value);
+    void set_spu_control_1(const uint16_t& value);
+    void set_spu_status(const uint16_t& value);
+    void stop_sound_play(const uint32_t& value);
+    
+    uint16_t get_spu_status()
+    { 
+        return this->spu_status; 
+    };
 private:
     Voice voices[24];
 
-    // Registers
-    uint16_t voice_regs[24] = {};    // 1F801C00h..1F801D7Fh - Voice 0..23 Registers (16bit reg per voice)
-    uint8_t spu_volume_control;      // F801D80h..1F801D87h - SPU Control (volume)
-    uint16_t voice_flags[16] = {};   // 1F801D88h..1F801D9Fh - Voice 0..23 Flags (six 1bit flags per voice) -> 16*uint16_t = 6bit *24
-    uint32_t spu_control;            // 1F801DA2h..1F801DBFh - SPU Control (memory, control, etc.) - 30 bits
-    uint32_t reverb[2];              // 1F801DC0h..1F801DFFh - Reverb configuration area - 64 bits
-    uint32_t voice_internal[3] = {}; // 1F801E00h..1F801E5Fh - Voice 0..23 Internal Registers - 96 bits
-    uint32_t unknown[13] = {};       // 1F801E60h..1F801E7Fh - Unknown? - 1F801E80h..1F801FFFh - Unused? - 416 bits
+    // registers
+    uint16_t master_volume_left  = 0; // 0x1f801d80
+    uint16_t master_volume_right = 0; // 0x1f801d82
+    uint16_t reverb_depth_left   = 0; // 0x1f801d84
+    uint16_t reverb_depth_right  = 0; // 0x1f801d86
+    // 0x1f801d8c (2 x 16bit registers, stop sound play, Write only
+    uint16_t spu_control_1       = 0; // 0x1f801daa
+    uint16_t spu_status          = 0; // 0x1f801dae
 };
 
 #endif

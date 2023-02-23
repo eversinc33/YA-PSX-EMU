@@ -12,3 +12,4 @@ Tested on (Kali) Linux only. MAC OSX does not support all OpenGL functions, so t
 * Nocash PSX specifications - https://problemkaputt.de/psx-spx.htm <- best console internals documentation 
 * MIPS Opcodes - http://mipsconverter.com/opcodes.html <- handy when implementing CPU
 * Learn Modern OpenGL - https://learnopengl.com/ <- for opengl stuff
+* SPU specs - https://gamehacking.org/faqs/psx_reg.pdf <- SPU registers

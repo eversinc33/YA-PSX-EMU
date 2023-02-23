@@ -244,7 +244,7 @@ void Renderer::push_triangle(Position positions[3], Color colors[3])
         // push
         this->positions.set(this->nvertices, positions[i]);
         this->colors.set(this->nvertices, colors[i]);
-        DEBUG("Triangle-vertex:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
+        // DEBUG("Triangle-vertex:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
         this->nvertices++;
     }
 }
@@ -264,7 +264,7 @@ void Renderer::push_quad(Position positions[4], Color colors[4])
     {
         this->positions.set(this->nvertices, positions[i]);
         this->colors.set(this->nvertices, colors[i]);
-        DEBUG("Triangle-vertex-for-quad:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
+        // DEBUG("Triangle-vertex-for-quad:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
         this->nvertices++;
     }
     // push second triangle
@@ -272,7 +272,7 @@ void Renderer::push_quad(Position positions[4], Color colors[4])
     {
         this->positions.set(this->nvertices, positions[i]);
         this->colors.set(this->nvertices, colors[i]);
-        DEBUG("Triangle-vertex-for-quad:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
+        // DEBUG("Triangle-vertex-for-quad:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
         this->nvertices++;
     }
 }

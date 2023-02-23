@@ -46,7 +46,7 @@ void Channel::setControl(const uint32_t &value) {
 
     this->dummy = (uint8_t)((value >> 29) & 3);
 
-    DEBUG("SYNCMODE OUT: " << this->sync);
+    //DEBUG("SYNCMODE OUT: " << this->sync);
 }
 
 void Channel::setBase(const uint32_t &value) {

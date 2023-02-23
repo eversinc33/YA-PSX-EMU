@@ -34,9 +34,9 @@ int main() {
     SDL_Event e; 
     while (true) // <3
     {
-        // only check for events every 1 mil cpu instructions
+        // only check for events every 50k cpu instructions
         uint32_t instructions_run = 0;
-        while (instructions_run <= 1000000)
+        while (instructions_run <= 50000)
         {
             cpu.runNextInstruction();
             instructions_run++;
