@@ -324,17 +324,7 @@ uint16_t Interconnect::load16(uint32_t address)
 
     if (this->spu->range.contains(absAddr))
     {
-        switch(absAddr) 
-        {
-            case 0x1f801dae:
-                return this->spu->get_spu_status();
-                break;
-            default:
-                break; 
-        }    
-        DEBUG("STUB:Unhandled_read_from_SPU_register:0x" << std::hex << absAddr);
-        throw std::exception();           
-        return 0;
+        return this->spu->load16(absAddr);
     }
     if (IRQ_CONTROL.contains(absAddr))
     {
@@ -363,39 +353,7 @@ void Interconnect::store16(const uint32_t &address, const uint16_t &value)
 
     if (this->spu->range.contains(absAddr))
     {
-        switch(absAddr) 
-        {
-            case 0x1f801d80:
-                this->spu->set_master_volume_left(value);
-                return; break;
-            case 0x1f801d82:
-                this->spu->set_master_volume_right(value);
-                return; break;
-            case 0x1f801d84:
-                this->spu->set_reverb_depth_left(value);
-                return; break;
-            case 0x1f801d86:
-                this->spu->set_reverb_depth_right(value);
-                return; break;
-            case 0x1f801d8c:
-                // left word of stop sound play
-                this->spu->stop_sound_play((((uint32_t)(value)) & 0x0000ffffu) << 16u);
-                return; break;
-            case 0x1f801d8e:
-                // right word of stop sound play
-                this->spu->stop_sound_play((((uint32_t)(value)) & 0x0000ffffu));
-                return; break;
-            case 0x1f801daa:
-                this->spu->set_spu_control_1(value);
-                return; break;
-            case 0x1f801dae:
-                this->spu->set_spu_status(value);
-                return; break;
-            default:
-                break;
-        }
-        DEBUG("STUB:Unhandled_write_to_SPU_register:0x" << std::hex << value << "_at_0x" << absAddr);
-        throw std::exception();
+        this->spu->store16(absAddr, value);
         return;
     }
     if (TIMERS.contains(absAddr))

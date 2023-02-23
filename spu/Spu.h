@@ -38,21 +38,15 @@ public:
     void set_voice_register(uint8_t voice, uint16_t value);
     uint16_t get_voice_register(uint8_t voice);
 
-    // registers
-    void set_master_volume_left(const uint16_t& value);
-    void set_master_volume_right(const uint16_t& value);
-    void set_reverb_depth_left(const uint16_t& value);
-    void set_reverb_depth_right(const uint16_t& value);
-    void set_spu_control_1(const uint16_t& value);
-    void set_spu_status(const uint16_t& value);
-    void stop_sound_play(const uint32_t& value);
-    
-    uint16_t get_spu_status()
-    { 
-        return this->spu_status; 
-    };
+
+    void store16(const uint32_t &address, const uint16_t &value);
+    uint16_t load16(const uint32_t &address);
 private:
     Voice voices[24];
+
+    void stop_sound_play(const uint32_t& value);
+    void set_spu_control_1(const uint16_t& value);
+    void set_spu_status(const uint16_t& value);
 
     // registers
     uint16_t master_volume_left  = 0; // 0x1f801d80
