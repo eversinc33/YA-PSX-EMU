@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Bios.h"
+#include "../util/logging.h"
 
 uint8_t Bios::load8(const uint32_t &offset) const {
     return this->data[offset];
@@ -38,6 +39,7 @@ void Bios::readBinary(const char* fname, const uint32_t& fileLen) {
 
     //Read file contents into buffer
     fread(data, fileLen, 1, file);
+    DEBUG("BIOS:" << data)
     fclose(file);
 }
 

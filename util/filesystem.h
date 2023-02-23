@@ -7,7 +7,22 @@
 #include <fstream>
 #include <string>
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 namespace fs = std::filesystem;
+
+inline bool file_exists(const std::string& fname) 
+{
+    if (FILE *file = fopen(fname.c_str(), "r")) 
+    {
+        fclose(file);
+        return true;
+    } 
+    else 
+    {
+        return false;
+    }   
+}
 
 inline std::string read_file_to_string(fs::path path)
 {

@@ -251,13 +251,28 @@ void Gpu::gp0_clear_cache(const uint32_t& value)
 // GP0(0x28): Monochrome Opaque Quadrilateral
 void Gpu::gp0_quad_mono_opaque(const uint32_t& value)
 {
-    DEBUG("STUB:gp0_draw_quad");
+    Position positions[4] = {
+        pos_from_gp0(this->current_command.command[1]),
+        pos_from_gp0(this->current_command.command[2]),
+        pos_from_gp0(this->current_command.command[3]),
+        pos_from_gp0(this->current_command.command[4])
+    };
+
+    // only one color, so just repeat colour
+    Color colors[4] = { 
+        color_from_gp0(this->current_command.command[0]),
+        color_from_gp0(this->current_command.command[0]),
+        color_from_gp0(this->current_command.command[0]),
+        color_from_gp0(this->current_command.command[0])
+    };
+
+    this->renderer->push_quad(positions, colors);
 }
 
 // GP0(0x2C): Textured Opaque Quadrilateral
 void Gpu::gp0_quad_texture_blend_opaque(const uint32_t& value)
 {
-    DEBUG("STUB:gpß_draw_quad_texture_blending");
+    DEBUG("STUB:gp0_draw_quad_texture_blending");
 }
 
 // GP0(0x30): Shaded Opaque Triangle
@@ -282,7 +297,22 @@ void Gpu::gp0_triangle_shaded_opaque(const uint32_t& value)
 // GP0(0x38): Shaded Opaque Quadrilateral
 void Gpu::gp0_quad_shaded_opaque(const uint32_t& value)
 {
-    DEBUG("STUB:gp0_draw_quad_shaded");
+    Position positions[4] = {
+        pos_from_gp0(this->current_command.command[1]),
+        pos_from_gp0(this->current_command.command[3]),
+        pos_from_gp0(this->current_command.command[5]),
+        pos_from_gp0(this->current_command.command[7])
+    };
+
+    // only one color, so just repeat colour
+    Color colors[4] = { 
+        color_from_gp0(this->current_command.command[0]),
+        color_from_gp0(this->current_command.command[2]),
+        color_from_gp0(this->current_command.command[4]),
+        color_from_gp0(this->current_command.command[6])
+    };
+
+    this->renderer->push_quad(positions, colors);
 }
 
 // GP0(0xA0): Image load
@@ -386,8 +416,9 @@ void Gpu::gp0_drawing_offset(const uint32_t& value)
     uint16_t y = (uint16_t)((value >> 11) & 0x7ff);
 
     // Values are 11bit two's complement signed values so we need to shift the value to 16 bits to force sign extension
-    this->drawing_x_offset = (int16_t)(x << 5) >> 5;
-    this->drawing_y_offset = (int16_t)(y << 5) >> 5;
+    int16_t drawing_x_offset = (int16_t)(x << 5) >> 5;
+    int16_t drawing_y_offset = (int16_t)(y << 5) >> 5;
+    this->renderer->set_drawing_offset(drawing_x_offset, drawing_y_offset);
 
     // TODO: FIXME: temporary hack to render screen, fix when timing is implemented
     DEBUG("RENDER----------------------------------")
@@ -422,8 +453,6 @@ void Gpu::gp1_reset(const uint32_t& value)
     this->drawing_area_top = 0;
     this->drawing_area_bottom = 0;
     this->drawing_area_right = 0;
-    this->drawing_x_offset = 0;
-    this->drawing_y_offset = 0;
     this->force_set_mask_bit = false;
     this->preserve_masked_pixels = false;
     this->dma_direction = Off;

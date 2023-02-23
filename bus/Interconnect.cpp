@@ -102,7 +102,7 @@ uint32_t Interconnect::load32(const uint32_t& address) {
                 break;
         }
     }
-    if (SPU.contains(absAddr)) {
+    if (this->spu->range.contains(absAddr)) {
         DEBUG("STUB:Unhandled_load32_from_SPU");
         return 0;
     }
@@ -274,9 +274,9 @@ uint8_t Interconnect::load8(const uint32_t& address) {
 uint16_t Interconnect::load16(uint32_t address) {
     auto absAddr = this->maskRegion(address);
 
-    if (SPU.contains(absAddr)) {
-        DEBUG("STUB:Unhandled_read_from_SPU_register:_0x" << std::hex << absAddr);
-        return 0;
+    if (this->spu->range.contains(absAddr)) {
+        uint32_t offset = (absAddr - this->spu->range.start);
+        return this->spu->load16(offset);
     }
     if (IRQ_CONTROL.contains(absAddr)) {
         DEBUG("STUB:Unhandled_read_from_IRQ_CONTROL_register:0x" << std::hex << absAddr);
@@ -299,8 +299,9 @@ void Interconnect::store16(const uint32_t &address, const uint16_t &value) {
 
     auto absAddr = this->maskRegion(address);
 
-    if (SPU.contains(absAddr)) {
-        DEBUG("STUB:Unhandled_write_to_SPU_register:0x" << std::hex << value);
+    if (this->spu->range.contains(absAddr)) {
+        uint32_t offset = (absAddr - this->spu->range.start);
+        this->spu->store16(offset, value);
         return;
     }
     if (TIMERS.contains(absAddr)) {

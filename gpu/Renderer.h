@@ -5,7 +5,15 @@
 
 #define GL_SILENCE_DEPRECATION
 #include <SDL2/SDL.h> 
+
+#define GL_GLEXT_PROTOTYPES 1
+#define GL3_PROTOTYPES 1
+#ifdef __APPLE__
 #include <OpenGL/gl3.h>
+#else
+#include <GL/gl.h>
+#endif
+
 #include "../util/logging.h"
 #include "../util/filesystem.h"
 #include <cstring>
@@ -71,19 +79,22 @@ public:
     Buffer() {
     };
     
-    void create() {
+    void init_buffer() {
         glGenBuffers(1, &object);
         glBindBuffer(GL_ARRAY_BUFFER, object);
         GLsizeiptr element_size = (GLsizeiptr)(sizeof(T));
         GLsizeiptr buffer_size  = (GLsizeiptr)(element_size * VERTEX_BUFFER_LEN);
         GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 #ifdef __APPLE__
+        // TODO FIXME this call is wrong
         glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, access);
+        DEBUG("MACOSX:Unsupported:glBufferStorage_not_implemented!s")
+        throw std::exception();
 #else 
         glBufferStorage(GL_ARRAY_BUFFER, buffer_size, NULL, access);
 #endif
-        // TODO: reset buffer to zero memory
         this->map = (T*)glMapBufferRange(GL_ARRAY_BUFFER, 0, buffer_size, access);
+        memset(this->map, 0, buffer_size);
         if (this->map == NULL)
         {
             DEBUG("ERROR:gl_buffer_range_mapped_is_null");
@@ -116,11 +127,10 @@ public:
     Renderer();
     ~Renderer();
 
-    void poll();
-    bool init_sdl();
-
     void push_triangle(Position positions[3], Color colors[3]);
+    void push_quad(Position positions[4], Color colors[4]);
     void display();
+    void set_drawing_offset(const int16_t& x, const int16_t& y);
 private:
     SDL_Window* window;
     SDL_Surface* screen_surface;
@@ -133,9 +143,10 @@ private:
     Buffer<Position> positions; // buffer with positions
     Buffer<Color> colors; // buffer with colors
     uint32_t nvertices = 0; // current n of vertices in the buffers
+    GLint uniform_offset; // offset for drawing vertices
     
-    bool should_quit = false; 
-
+    bool init_sdl();
+    void check_for_errors();
     void draw();
 };
 

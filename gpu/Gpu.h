@@ -105,29 +105,7 @@ public:
     uint32_t read();
     void gp0(const uint32_t& value);
     void gp1(const uint32_t& value);
-    void gp0_nop(const uint32_t& value);
-    void gp0_clear_cache(const uint32_t& value);
-    void gp0_quad_mono_opaque(const uint32_t& value);
-    void gp0_quad_shaded_opaque(const uint32_t& value);
-    void gp0_quad_texture_blend_opaque(const uint32_t& value);
-    void gp0_triangle_shaded_opaque(const uint32_t& value);
-    void gp0_image_load(const uint32_t& value);
-    void gp0_image_store(const uint32_t& value);
-    void gp0_draw_mode(const uint32_t& value);
-    void gp0_texture_window(const uint32_t& value);
-    void gp0_set_drawing_area_top_left(const uint32_t& value);
-    void gp0_set_drawing_area_bottom_right(const uint32_t& value);
-    void gp0_drawing_offset(const uint32_t& value);
-    void gp0_mask_bit_setting(const uint32_t& value);
-    void gp1_reset_command_buffer(const uint32_t& value);
-    void gp1_display_horizontal_range(const uint32_t& value);
-    void gp1_display_vertical_range(const uint32_t& value);
-    void gp1_acknowledge_irq(const uint32_t& value);
-    void gp1_display_enable(const uint32_t& value);
-    void gp1_display_vram_start(const uint32_t& value);
-    void gp1_reset(const uint32_t& value);
-    void gp1_dma_direction(const uint32_t& value);
-    void gp1_display_mode(const uint32_t& value);
+    
 
 private:
     Renderer* renderer;
@@ -162,14 +140,36 @@ private:
     uint16_t drawing_area_top; // topmost col of drawing area
     uint16_t drawing_area_right; // ...
     uint16_t drawing_area_bottom; 
-    int16_t drawing_x_offset; // horizontal drawing offset applied to all vertices
-    int16_t drawing_y_offset;
     uint16_t display_vram_x_start; // first col of the display are in VRAM
     uint16_t display_vram_y_start; // first line of the display are in VRAM
     uint16_t display_horiz_start; // display output horizontal start relative to HSYNC
     uint16_t display_horiz_end;
     uint16_t display_line_start; // display output first line relative to VSYNC
     uint16_t display_line_end;
+
+    void gp0_nop(const uint32_t& value);
+    void gp0_clear_cache(const uint32_t& value);
+    void gp0_quad_mono_opaque(const uint32_t& value);
+    void gp0_quad_shaded_opaque(const uint32_t& value);
+    void gp0_quad_texture_blend_opaque(const uint32_t& value);
+    void gp0_triangle_shaded_opaque(const uint32_t& value);
+    void gp0_image_load(const uint32_t& value);
+    void gp0_image_store(const uint32_t& value);
+    void gp0_draw_mode(const uint32_t& value);
+    void gp0_texture_window(const uint32_t& value);
+    void gp0_set_drawing_area_top_left(const uint32_t& value);
+    void gp0_set_drawing_area_bottom_right(const uint32_t& value);
+    void gp0_drawing_offset(const uint32_t& value);
+    void gp0_mask_bit_setting(const uint32_t& value);
+    void gp1_reset_command_buffer(const uint32_t& value);
+    void gp1_display_horizontal_range(const uint32_t& value);
+    void gp1_display_vertical_range(const uint32_t& value);
+    void gp1_acknowledge_irq(const uint32_t& value);
+    void gp1_display_enable(const uint32_t& value);
+    void gp1_display_vram_start(const uint32_t& value);
+    void gp1_reset(const uint32_t& value);
+    void gp1_dma_direction(const uint32_t& value);
+    void gp1_display_mode(const uint32_t& value);
 };
 
 #endif

@@ -6,6 +6,8 @@
 #include <iostream>
 #include <chrono>
 #include <ctime>
+#include <cstring>
+#include "filesystem.h"
 
 inline std::string current_time()
 {
@@ -17,7 +19,6 @@ inline std::string current_time()
     return buf;
 }
 
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define DEBUG(x) std::cout << "[" << __FILENAME__ << " - " << current_time() << "] " << x << std::endl;
 
 #endif

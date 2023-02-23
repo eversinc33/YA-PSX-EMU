@@ -5,6 +5,7 @@
 #include "../memory/Ram.h"
 #include "../memory/Dma.h"
 #include "../gpu/Gpu.h"
+#include "../spu/Spu.h"
 
 // KUSEG, KSEG etc. all refer to the same address space, so convert them to real addresses,
 // by masking their region bits.
@@ -26,12 +27,14 @@ public:
     Ram *ram;
     Dma *dma;
     Gpu* gpu;
+    Spunit* spu;
 
-    Interconnect(Bios* bios, Ram* ram, Dma* dma, Gpu* gpu) {
+    Interconnect(Bios* bios, Ram* ram, Dma* dma, Gpu* gpu, Spunit* spu) {
         this->bios = bios;
         this->ram = ram;
         this->dma = dma;
         this->gpu = gpu;
+        this->spu = spu;
     };
 
     uint32_t load32(const uint32_t& address);

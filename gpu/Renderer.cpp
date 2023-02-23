@@ -70,6 +70,21 @@ GLuint find_program_attrib(const GLuint& program, const std::string& attr)
     return (GLuint)index;
 }
 
+// get index for uniform in program
+GLuint find_program_uniform(const GLuint& program, const std::string& attr)
+{
+    auto cstr = attr.c_str();
+    auto index = glGetUniformLocation(program, cstr);
+
+    if (index < 0) 
+    {
+        DEBUG("ERROR:GL_uniform_'" << attr << "'_not_found_in_program");
+        throw std::exception();
+    }
+
+    return (GLuint)index;
+}
+
 Renderer::Renderer()
 {
     if (!this->init_sdl()) 
@@ -77,9 +92,22 @@ Renderer::Renderer()
         throw std::exception();
     }
 
-    // Read and compile shaders TODO relative paths
-    auto vs_src = read_file_to_string("/Users/sven/Documents/Code/Repos/YA-PSX-EMU/gpu/shaders/vertex.glsl");
-    auto fg_src = read_file_to_string("/Users/sven/Documents/Code/Repos/YA-PSX-EMU/gpu/shaders/fragment.glsl");
+    // TODO: fix hardcoded paths
+    auto vertex_shader_path = "../gpu/shaders/vertex.glsl";
+    auto fragment_shader_path = "../gpu/shaders/fragment.glsl";
+    if (!file_exists(vertex_shader_path))
+    {
+        DEBUG("Shader not found. Expected path:" << vertex_shader_path);
+        throw std::exception();
+    }
+    if (!file_exists(fragment_shader_path))
+    {
+        DEBUG("Shader not found. Expected path:" << vertex_shader_path);
+        throw std::exception();
+    }
+
+    auto vs_src = read_file_to_string("../gpu/shaders/vertex.glsl");
+    auto fg_src = read_file_to_string("../gpu/shaders/fragment.glsl");
     this->vertex_shader   = compile_shader(vs_src, GL_VERTEX_SHADER);
     this->fragment_shader = compile_shader(fg_src, GL_FRAGMENT_SHADER);
 
@@ -93,15 +121,19 @@ Renderer::Renderer()
 
     // Set up Positions buffer
     this->positions = Buffer<Position>();
-    this->positions.create();
+    this->positions.init_buffer();
     auto index = find_program_attrib(program, "vertex_position");
     glEnableVertexAttribArray(index);
     // 2 GLShort attributes, not normalized
     glVertexAttribIPointer(index, 2, GL_SHORT, 0, nullptr);
 
+    // set up offset handling
+    this->uniform_offset = find_program_uniform(program, "uniform_offset");
+    glUniform2i(this->uniform_offset, 0, 0); // initially set to 0,0
+
     // Set up Color buffer
     this->colors = Buffer<Color>();
-    this->colors.create();
+    this->colors.init_buffer();
     index = find_program_attrib(program, "vertex_color");
     glEnableVertexAttribArray(index);
     // 3 GLubyte attributes, not normalized
@@ -111,16 +143,21 @@ Renderer::Renderer()
     glClearColor(0.0, 0.0, 0.0, 1.0);    
     glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(this->window);
+    
+    // verify all went well
+    this->check_for_errors();
 }
 
 bool Renderer::init_sdl()
 {
-    SDL_Init(SDL_INIT_VIDEO);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    // TODO: set DEBUG_FLAG only when run as debug
 #ifdef __APPLE__
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#else
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
 #ifdef __APPLE__
@@ -140,40 +177,35 @@ bool Renderer::init_sdl()
     return true;
 }
 
+void Renderer::check_for_errors()
+{
+    const GLsizei buffer_len  = 4096;
+    GLchar buffer[buffer_len] = { 0 }; // buffer for message log
+    // bool fatal                = false; // TODO: throw exception on fatal severity
+
+    GLsizei msg_size = 0;
+    GLenum severity  = 0;
+    GLenum source    = 0;
+    GLenum mtype     = 0;
+    GLuint id        = 0;
+
+    while (true) 
+    {
+        if (glGetDebugMessageLog(1, buffer_len, &source, &mtype, &id, &severity, &msg_size, buffer) == 0)
+        {
+            break;
+        }
+    }
+
+    std::string message = std::string(&buffer[0], &buffer[msg_size]);
+    DEBUG("OpenGL_Error:" << severity << "," << mtype << ":" << message);
+}
+
 void Renderer::display()
 {
     this->draw();
     SDL_GL_SwapWindow(this->window);
-    this->poll();
-}
-
-void Renderer::poll()
-{
-    SDL_Event e; 
-    SDL_PollEvent(&e);
-    switch (e.type)
-    {
-        case SDL_WINDOWEVENT:
-            switch (e.window.event) 
-            {
-                case SDL_WINDOWEVENT_CLOSE:  
-                    DEBUG("Window closed")
-                    this->should_quit = true;
-                    break;
-                default: break;
-            }
-            break; 
-        case SDL_QUIT:
-            this->should_quit = true;
-            break;              
-        default: break;
-    }
-
-    if (this->should_quit)
-    {
-        SDL_DestroyWindow(this->window);
-        SDL_Quit();
-    }
+    this->check_for_errors();
 }
 
 void Renderer::draw() 
@@ -207,19 +239,59 @@ void Renderer::push_triangle(Position positions[3], Color colors[3])
         this->draw();
     }
     
-    for (const auto& i : { 0,1,2,3 }) 
+    for (const auto& i : { 0,1,2 }) 
     {
         // push
         this->positions.set(this->nvertices, positions[i]);
         this->colors.set(this->nvertices, colors[i]);
+        DEBUG("Triangle-vertex:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
+        this->nvertices++;
+    }
+}
+
+void Renderer::push_quad(Position positions[4], Color colors[4]) 
+{
+    // make sure we have enough room to queue the vertices
+    // 2 triangles = 1 quad, so 6 vertices
+    if (this->nvertices + 6 > VERTEX_BUFFER_LEN)
+    {
+        DEBUG("VERTEX_BUFFERS_FULL!_FORCING_DRAW!");
+        this->draw();
+    }
+    
+    // push first triangle
+    for (const auto& i : { 0,1,2 }) 
+    {
+        this->positions.set(this->nvertices, positions[i]);
+        this->colors.set(this->nvertices, colors[i]);
+        DEBUG("Triangle-vertex-for-quad:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
+        this->nvertices++;
+    }
+    // push second triangle
+    for (const auto& i : { 1,2,3 }) 
+    {
+        this->positions.set(this->nvertices, positions[i]);
+        this->colors.set(this->nvertices, colors[i]);
+        DEBUG("Triangle-vertex-for-quad:" << positions[i].x << "," << positions[i].y << " -> " << (float(positions[i].x)/512)-1.0f << "," << float(positions[i].y / 256.0));
         this->nvertices++;
     }
 }
 
 Renderer::~Renderer()
 {
+    SDL_DestroyWindow(this->window);
+    SDL_Quit();
     glDeleteVertexArrays(1, &this->vertex_array_object);
     glDeleteShader(this->vertex_shader);
     glDeleteShader(this->fragment_shader);
     glDeleteProgram(this->program);
 }
+
+void Renderer::set_drawing_offset(const int16_t& x, const int16_t& y)
+{
+    // draw before applying offset
+    this->draw();
+
+    glUniform2i(this->uniform_offset, GLint(x), GLint(y));
+}
+

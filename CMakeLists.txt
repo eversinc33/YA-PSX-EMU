@@ -44,6 +44,8 @@ add_executable(PSXEMU
     gpu/Constants.h
     gpu/CommandBuffer.cpp
     gpu/CommandBuffer.h
+    spu/Spu.cpp
+    spu/Spu.h
 )
 
 target_link_libraries(PSXEMU SDL2::SDL2 OpenGL::GL) # ${SDL2_LIBRARY})
