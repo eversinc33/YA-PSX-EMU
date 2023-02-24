@@ -182,8 +182,11 @@ void Gpu::gp0(const uint32_t& value)
             }
             break;
         case GP0Mode::ImageLoad:
+            DEBUG("STUB:load_image_word");
+            
             // TODO: copy pixel data to VRAM
-            // TODO FIXME : might need to refactor here and loose the struct
+            // TODO get target VRAM location from 
+
             if (this->current_command.words_remaining == 0)
             {
                 this->gp0_mode = GP0Mode::Command;
@@ -272,6 +275,8 @@ void Gpu::gp0_quad_mono_opaque(const uint32_t& value)
 // GP0(0x2C): Textured Opaque Quadrilateral
 void Gpu::gp0_quad_texture_blend_opaque(const uint32_t& value)
 {
+    // TODO: sony font will be rendered here
+
     DEBUG("STUB:gp0_draw_quad_texture_blending");
 }
 
@@ -318,6 +323,8 @@ void Gpu::gp0_quad_shaded_opaque(const uint32_t& value)
 // GP0(0xA0): Image load
 void Gpu::gp0_image_load(const uint32_t& value)
 {
+    // TODO: param 1: coords where image will be put in vram
+    // uint32_t target_vram_coords = this->current_command.command[1];
     // param 2: image resolution:
     uint32_t image_resolution = this->current_command.command[2];
 
@@ -338,8 +345,6 @@ void Gpu::gp0_image_load(const uint32_t& value)
 
     // put G0 to image load mode
     this->gp0_mode = GP0Mode::ImageLoad;
-
-    DEBUG("STUB:load_image");
 }
 
 // GP0(0xC0): image store

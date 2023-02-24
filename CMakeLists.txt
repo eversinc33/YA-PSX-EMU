@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(PSXEMU)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 FIND_PACKAGE(SDL2 REQUIRED)
 Message("")
@@ -46,6 +46,10 @@ add_executable(PSXEMU
     gpu/CommandBuffer.h
     spu/Spu.cpp
     spu/Spu.h
+    spu/VoiceChannel.cpp
+    spu/VoiceChannel.h
+    memory/Vram.cpp
+    memory/Vram.h
 )
 
 target_link_libraries(PSXEMU SDL2::SDL2 OpenGL::GL) # ${SDL2_LIBRARY})

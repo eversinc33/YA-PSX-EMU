@@ -13,7 +13,7 @@ void Cpu::runNextInstruction() {
     // emulate branch delay slot: execute instruction, already fetch next instruction at PC (IP)
     Instruction instruction = Instruction(this->load32(this->pc));
 
-    // if the last instruction was a branch, were in the delay slot
+    // if the last instruction was a branch, we're in the delay slot
     this->inDelaySlot = this->branching;
     this->branching = false;
 
