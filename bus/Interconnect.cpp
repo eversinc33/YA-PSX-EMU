@@ -204,7 +204,6 @@ void Interconnect::store32(const uint32_t &address, const uint32_t &value)
                 DEBUG("STUB:Unhandled_write_to_DMA_register:0x" << std::hex << absAddr);
                 throw std::exception();
             }
-            DEBUG("DMACHANNEL" << port)
             if (channel->isActive())
             {
                 this->doDma(port);

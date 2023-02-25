@@ -84,10 +84,9 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, object);
         GLsizeiptr element_size = (GLsizeiptr)(sizeof(T));
         GLsizeiptr buffer_size  = (GLsizeiptr)(element_size * VERTEX_BUFFER_LEN);
-        GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT; // MACOSX: | GL_MAP_COHERENT_BIT;
 #ifdef __APPLE__
-        // TODO FIXME this call is wrong
-        glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, access);
+        // TODO FIXME macosx support
         DEBUG("MACOSX:Unsupported:glBufferStorage_not_implemented!s")
         throw std::exception();
 #else 

@@ -197,8 +197,11 @@ void Renderer::check_for_errors()
         }
     }
 
-    std::string message = std::string(&buffer[0], &buffer[msg_size]);
-    DEBUG("OpenGL_Error:" << severity << "," << mtype << ":" << message);
+    if (msg_size > 0)
+    {
+        std::string message = std::string(&buffer[0], &buffer[msg_size]);
+        DEBUG("OpenGL_Error:" << severity << "," << mtype << ":" << message);
+    }
 }
 
 void Renderer::display()
