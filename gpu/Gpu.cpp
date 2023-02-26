@@ -3,11 +3,6 @@
 #include <exception>
 #include "CommandBuffer.h"
 
-Gpu::~Gpu()
-{
-
-}
-
 // Return the horizontal resolution from the 2 bit field hr1 and the one bit field hr1
 HorizontalResolution from_fields(const uint8_t& hr1, const uint8_t& hr2) 
 {
@@ -182,10 +177,48 @@ void Gpu::gp0(const uint32_t& value)
             }
             break;
         case GP0Mode::ImageLoad:
-            DEBUG("STUB:load_image_word");
-            
-            // TODO: copy pixel data to VRAM
-            // TODO get target VRAM location from 
+            {
+                // add texture page base to target coordinate
+                uint16_t x = this->page_base_x*64  + this->image_load_vram_target_x;  
+                uint16_t y = this->page_base_y*256 + this->image_load_vram_target_y;
+
+                // copy pixel data to VRAM
+                // TODO: apply mask settings 
+                switch (this->texture_depth) // TODO FIXME: is texture depth the right value to query here?
+                {
+                    case TextureDepth::T15Bit:
+                        this->vram.store_16bit_texel(x, y, (uint16_t)(value >> 16));
+                        this->vram.store_16bit_texel(x + 1, y, (uint16_t)(value & 0xffff));
+                        break;
+                    case TextureDepth::T8Bit:
+                        this->vram.store_8bit_texels(x, y, (uint16_t)(value >> 16));
+                        this->vram.store_8bit_texels(x + 1, y, (uint16_t)(value & 0xffff));
+                        break;
+                    case TextureDepth::T4Bit:
+                        this->vram.store_4bit_texels(x, y, (uint16_t)(value >> 16));
+                        this->vram.store_4bit_texels(x + 1, y, (uint16_t)(value & 0xffff));
+                        break;
+                    default:
+                        DEBUG("ERROR:Invalid_texture_depth");
+                        throw std::exception();
+                        break;
+                }
+
+                // move on to next pixel in next iteration
+                // TODO: does the data go line by line or col by col?
+                if (!first_texel_in_row && ((this->image_load_vram_target_x - this->image_load_initial_x) % this->image_load_vram_width == 0))
+                {
+                    // new line, start from beginning
+                    this->image_load_vram_target_x -= this->image_load_vram_width;
+                    this->image_load_vram_target_y += 1; 
+                    first_texel_in_row = true;
+                }
+                else
+                {
+                    this->image_load_vram_target_x += 2;
+                    first_texel_in_row = false;
+                }
+            }
 
             if (this->current_command.words_remaining == 0)
             {
@@ -262,11 +295,9 @@ void Gpu::gp0_quad_mono_opaque(const uint32_t& value)
     };
 
     // only one color, so just repeat colour
+    auto color = color_from_gp0(this->current_command.command[0]);
     Color colors[4] = { 
-        color_from_gp0(this->current_command.command[0]),
-        color_from_gp0(this->current_command.command[0]),
-        color_from_gp0(this->current_command.command[0]),
-        color_from_gp0(this->current_command.command[0])
+        color, color, color, color
     };
 
     this->renderer->push_quad(positions, colors);
@@ -276,7 +307,6 @@ void Gpu::gp0_quad_mono_opaque(const uint32_t& value)
 void Gpu::gp0_quad_texture_blend_opaque(const uint32_t& value)
 {
     // TODO: sony font will be rendered here
-
     DEBUG("STUB:gp0_draw_quad_texture_blending");
 }
 
@@ -309,7 +339,6 @@ void Gpu::gp0_quad_shaded_opaque(const uint32_t& value)
         pos_from_gp0(this->current_command.command[7])
     };
 
-    // only one color, so just repeat colour
     Color colors[4] = { 
         color_from_gp0(this->current_command.command[0]),
         color_from_gp0(this->current_command.command[2]),
@@ -320,31 +349,36 @@ void Gpu::gp0_quad_shaded_opaque(const uint32_t& value)
     this->renderer->push_quad(positions, colors);
 }
 
-// GP0(0xA0): Image load
+// GP0(0xA0): Image load (from CPU to VRAM)
 void Gpu::gp0_image_load(const uint32_t& value)
 {
-    // TODO: param 1: coords where image will be put in vram
-    // uint32_t target_vram_coords = this->current_command.command[1];
+    // param 1: coords where image will be put in vram -> 0xYYYYXXXX
+    uint32_t target_vram_coords = this->current_command.command[1];
+    this->image_load_vram_target_x = target_vram_coords & 0xffff;
+    this->image_load_vram_target_y = target_vram_coords >> 16;
+
+    // hacky member vars FIXME
+    this->image_load_initial_x = this->image_load_vram_target_x;
+    this->first_texel_in_row = true;
+
     // param 2: image resolution:
     uint32_t image_resolution = this->current_command.command[2];
-
-    uint32_t width = image_resolution & 0xffff;
-    uint32_t height = image_resolution >> 16;
-
-    // imgsize in 16bit pixels
-    uint32_t image_size = width * height;
+    this->image_load_vram_width = image_resolution & 0xffff;
+    this->image_load_vram_height = image_resolution >> 16;
+    uint32_t image_size = this->image_load_vram_width * this->image_load_vram_height; // imgsize in 16bit pixels
     // odd number of pixels then round up, since we transfer 32 bits
     if (image_size % 2 != 0) 
     {
         image_size++;
     }
-    DEBUG("Loading_image_with_size:" << image_size);
 
     // store num of words expected for this image
     this->current_command.words_remaining = image_size / 2;
 
     // put G0 to image load mode
     this->gp0_mode = GP0Mode::ImageLoad;
+
+    DEBUG("Loading image with size:" << this->image_load_vram_width << "," << this->image_load_vram_height << " to " << this->image_load_vram_target_x << "," << this->image_load_vram_target_y);
 }
 
 // GP0(0xC0): image store

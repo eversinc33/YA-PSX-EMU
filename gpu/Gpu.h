@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "CommandBuffer.h"
 #include <exception>
+#include "../memory/Vram.h"
 
 class Gpu;
 typedef void (Gpu::*Gpu_operation)(const uint32_t& value);
@@ -29,7 +30,7 @@ enum GP0Mode {
 // Depth of pixel values in a texture page
 enum TextureDepth {
     T4Bit = 0, // 4 bits per pixel
-    T8Bit = 1,
+    T8Bit = 1, 
     T15Bit = 2
 };
 
@@ -56,7 +57,7 @@ enum VMode {
     PAL = 1   // 576i50Hz
 };
 
-// Display are color depth
+// Display  color depth
 enum DisplayDepth {
     D15Bits = 0, // 15 bits per pixel
     D24Bits = 1  // 24 bits per pixel
@@ -92,15 +93,20 @@ public:
           display_disabled(true),
           interrupted(false),
           dma_direction(Off),
-          rectangle_texture_x_flip(false), rectangle_texture_y_flip(false)
+          rectangle_texture_x_flip(false), rectangle_texture_y_flip(false),
+          vram(Vram())
     {
         // Setup renderer
         this->renderer = new Renderer();
     };
-    ~Gpu();
+    ~Gpu() 
+    {
+
+    };
 
     GP0Mode gp0_mode;
     GPUCommand current_command;
+    Vram vram; 
     uint32_t status_read();
     uint32_t read();
     void gp0(const uint32_t& value);
@@ -146,6 +152,12 @@ private:
     uint16_t display_horiz_end;
     uint16_t display_line_start; // display output first line relative to VSYNC
     uint16_t display_line_end;
+
+    // when in image load mode
+    uint16_t image_load_vram_target_x, image_load_vram_target_y;
+    uint16_t image_load_vram_width, image_load_vram_height;
+    uint16_t image_load_initial_x;
+    bool first_texel_in_row = true;
 
     void gp0_nop(const uint32_t& value);
     void gp0_clear_cache(const uint32_t& value);

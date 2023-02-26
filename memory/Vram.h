@@ -4,7 +4,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "../gpu/Gpu.h"
 
 // 1MB of VRAM
 #define VRAM_WIDTH 1024
@@ -14,8 +13,12 @@
 class Vram
 {
 public:
-    Vram();
-    ~Vram();
+    Vram() {
+
+    };
+    ~Vram() {
+
+    };
 
     uint16_t get_4bit_texel(const uint16_t& x, const uint16_t& y);
     uint16_t get_8bit_texel(const uint16_t& x, const uint16_t& y);
@@ -25,7 +28,7 @@ public:
     void store_16bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& data);
     
 private:
-    uint16_t vram[VRAM_SIZE];
+    uint16_t vram[VRAM_SIZE] = { 0 };
 };
 
 #endif

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define GL_SILENCE_DEPRECATION
+// #define GL_SILENCE_DEPRECATION
 #include <SDL2/SDL.h> 
 
 #define GL_GLEXT_PROTOTYPES 1
