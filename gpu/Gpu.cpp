@@ -312,25 +312,48 @@ void Gpu::gp0_quad_texture_blend_opaque(const uint32_t& value)
     };
 
     // third param: CLUT+texcoord1 CLUTYYXX
-    uint16_t CLUT      = this->current_command.command[4] && 0b11110000;
-    uint8_t texcoord_x = (uint8_t)(this->current_command.command[4] & 0b00000011);
-    uint8_t texcoord_y = (uint8_t)(this->current_command.command[4] & 0b00001100);
+    uint16_t CLUT  = (uint16_t)((this->current_command.command[4] && 0xffff0000) >> 16);
+    // parse CLUT TODO refactor to own method
+    uint8_t clut_x =  (uint8_t)(this->current_command.command[4] & 0x000001ff); // 0-5 -> x coord in 32byte steps
+    uint8_t clut_x =  (uint8_t)((this->current_command.command[4] & 0x0000fe00) >> 8); // 6-15 -> y coord
+
+    uint8_t texcoord_x = (uint8_t)(this->current_command.command[4] & 0x000000ff);
+    uint8_t texcoord_y = (uint8_t)((this->current_command.command[4] & 0x0000ff00) >> 8);
 
     // fifth param: texcoord2+texpage PageYYXX
-    uint16_t Page       = this->current_command.command[4] && 0b11110000;
-    uint8_t texcoord2_x = (uint8_t)(this->current_command.command[4] & 0b00000011);
-    uint8_t texcoord2_y = (uint8_t)(this->current_command.command[4] & 0b00001100);
+    uint16_t Page       = this->current_command.command[4] && 0xffff0000;
+    uint8_t texcoord2_x = (uint8_t)(this->current_command.command[4] & 0x000000ff);
+    uint8_t texcoord2_y = (uint8_t)((this->current_command.command[4] & 0x0000ff00) >> 8);
  
     // seventh param: texcoord3 0000YYXX
-    uint8_t texcoord3_x = (uint8_t)(this->current_command.command[6] & 0b00000011);
-    uint8_t texcoord3_y = (uint8_t)(this->current_command.command[6] & 0b00001100);
+    uint8_t texcoord3_x = (uint8_t)(this->current_command.command[6] & 0x000000ff);
+    uint8_t texcoord3_y = (uint8_t)((this->current_command.command[6] & 0x0000ff00) >> 8);
 
     // nineth param: texcoord4 0000YYXX
-    uint8_t texcoord4_x = (uint8_t)(this->current_command.command[8] & 0b00000011);
-    uint8_t texcoord4_y = (uint8_t)(this->current_command.command[8] & 0b00001100);
+    uint8_t texcoord4_x = (uint8_t)(this->current_command.command[8] & 0x000000ff);
+    uint8_t texcoord4_y = (uint8_t)((this->current_command.command[8] & 0x0000ff00) >> 8);
 
-    // TODO: push to renderer
-    DEBUG("STUB:draw_quad_texture_blend_opaque")
+    // get rgba values for texture
+    uint16_t texture_width = texcoord2_x - texcoord_x;
+    uint16_t texture_height = texcoord2_y - texcoord_y; 
+    auto buffer_size = texture_width * texture_height * 4;
+    auto *texture_data = new unsigned char[buffer_size]; 
+    for (uint16_t y=0; y < texture_height; ++y)
+    {
+        for (uint16_t x=0; x < texture_width; ++x)
+        {
+            // TODO pretend 4bit for now
+            RGBA rgba = this->vram.get_4bit_texel(texcoord_x + x, texcoord_y + y, this->page_base_x, this->page_base_y, clut_x, clut_y);
+            texture_data[y+x] = rgba.r;
+            texture_data[y+x+1] = rgba.g;
+            texture_data[y+x+2] = rgba.b;
+            texture_data[y+x+3] = rgba.a;
+        }
+    }
+
+    // push to renderer
+    this->renderer->push_quad_textured(positions, texture_data, buffer_size);
+    delete texture_data;
 }
 
 // GP0(0x30): Shaded Opaque Triangle

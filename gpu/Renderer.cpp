@@ -280,6 +280,11 @@ void Renderer::push_quad(Position positions[4], Color colors[4])
     }
 }
 
+void Renderer::push_quad_textured(Position positions[4], unsigned char* texture_data, const uint16_t& buf_size) 
+{
+    // TODO
+}
+
 Renderer::~Renderer()
 {
     SDL_DestroyWindow(this->window);

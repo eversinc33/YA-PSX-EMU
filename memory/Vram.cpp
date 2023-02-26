@@ -17,13 +17,13 @@ RGBA Vram::get_16bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t&
     return texel;
 }
 
-RGBA Vram::get_8bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& page_x, const uint16_t& page_y)
+RGBA Vram::get_8bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& page_x, const uint16_t& page_y, const uint16_t& clut_x, const uint16_t& clut_y)
 {
     int _index = (y * VRAM_WIDTH) + x/2;
     // get only the wanted texel's CLUT index
     uint8_t index = (this->vram[_index] >> (x % 2) * 4) & 0xF; 
     // return corresponding value in CLUT
-    uint16_t texel_data = this->vram[(this->clut_y * VRAM_WIDTH) + this->clut_x + index];
+    uint16_t texel_data = this->vram[(clut_y * VRAM_WIDTH) + clut_x*32 + index]; // clut x is in 32bit steps
 
     RGBA texel = {
         .r = (uint8_t)(texel_data & 0x1F),
@@ -35,13 +35,13 @@ RGBA Vram::get_8bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& 
     return texel;
 }
 
-RGBA Vram::get_4bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& page_x, const uint16_t& page_y)
+RGBA Vram::get_4bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& page_x, const uint16_t& page_y, const uint16_t& clut_x, const uint16_t& clut_y)
 {
     int _index = (y * VRAM_WIDTH) + x/4;
     // get only the wanted texel's CLUT index
     uint8_t index = (this->vram[_index] >> (x % 4) * 4) & 0xF; 
     // return corresponding value in CLUT
-    uint16_t texel_data = this->vram[(this->clut_y * VRAM_WIDTH) + this->clut_x + index];
+    uint16_t texel_data = this->vram[(clut_y * VRAM_WIDTH) + clut_x*32 + index]; // clut x is in 32bit steps
 
     RGBA texel = {
         .r = (uint8_t)(texel_data & 0x1F),
@@ -56,5 +56,6 @@ RGBA Vram::get_4bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& 
 void Vram::store(const uint16_t& value, const uint16_t& x, const uint16_t& y, const uint16_t& page_x, const uint16_t& page_y)
 {
 	int index = (y * VRAM_WIDTH) + x;
+
     this->vram[index] = value;
 }

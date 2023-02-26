@@ -128,6 +128,7 @@ public:
 
     void push_triangle(Position positions[3], Color colors[3]);
     void push_quad(Position positions[4], Color colors[4]);
+    void push_quad_textured(Position positions[4], unsigned char* texture_data, const uint16_t& buf_size);
     void display();
     void set_drawing_offset(const int16_t& x, const int16_t& y);
 private:
