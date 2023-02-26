@@ -178,16 +178,24 @@ void Gpu::gp0(const uint32_t& value)
             break;
         case GP0Mode::ImageLoad:
             {
-                // add texture page base to target coordinate
-                uint16_t x = this->page_base_x*64  + this->image_load_vram_target_x;  
-                uint16_t y = this->page_base_y*256 + this->image_load_vram_target_y;
-
                 // TODO: apply mask settings 
 
                 // copy pixel data to VRAM
-                // TODO: verify order
-                this->vram.store(x, y, (uint16_t)(value >> 16));
-                this->vram.store(x + 1, y, (uint16_t)(value & 0xffff));
+                // TODO: verify order is right
+                this->vram.store(
+                    (uint16_t)(value >> 16), 
+                    this->image_load_vram_target_x, 
+                    this->image_load_vram_target_y, 
+                    this->page_base_x*64,  // add texture page base to target coordinate
+                    this->page_base_y*256
+                );
+                this->vram.store(
+                    (uint16_t)(value & 0xffff), 
+                    this->image_load_vram_target_x, 
+                    this->image_load_vram_target_y, 
+                    this->page_base_x*64, 
+                    this->page_base_y*256
+                );
 
                 // move on to next pixel in next iteration
                 // TODO: does the data go line by line or col by col?

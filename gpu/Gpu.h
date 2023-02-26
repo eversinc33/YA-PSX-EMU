@@ -98,6 +98,8 @@ public:
     {
         // Setup renderer
         this->renderer = new Renderer();
+        // init vram
+        this->vram.init();
     };
     ~Gpu() 
     {
