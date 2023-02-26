@@ -1,18 +1,26 @@
 #include "Vram.h"
 
 
-uint16_t Vram::get_16bit_texel(const uint16_t& x, const uint16_t& y)
+RGBA Vram::get_16bit_texel(const uint16_t& x, const uint16_t& y)
 {
     // return texel data at x, y from VRAM
-    int index = (y * VRAM_WIDTH) + x;
-    // TODO: CLUT
-    // TODO: return RGB object
-    return this->vram[index];
+    uint8_t index = (y * VRAM_WIDTH) + x;
+    uint16_t texel_data = this->vram[index];
+
+    // no CLUT used in 16 bit texels, parse data directly
+    RGBA texel = {
+        .r = (uint8_t)(texel_data & 0x1F),
+        .g = (uint8_t)((texel_data >> 5) & 0x1f),
+        .b = (uint8_t)((texel_data >> 10) & 0x1f),
+        .a = (uint8_t)((texel_data >> 15) & 0x1)
+    };
+    
+    return texel;
 }
 
 uint16_t Vram::get_8bit_texel(const uint16_t& x, const uint16_t& y)
 {
-    int index = (y * VRAM_WIDTH*2) + x/2;
+    int index = (y * VRAM_WIDTH) + x/2;
     // get only the wanted texel
     uint8_t texel = (this->vram[index] >> (x % 2) * 4) & 0xF; 
     // TODO: CLUT
@@ -22,7 +30,7 @@ uint16_t Vram::get_8bit_texel(const uint16_t& x, const uint16_t& y)
 
 uint16_t Vram::get_4bit_texel(const uint16_t& x, const uint16_t& y)
 {
-    int index = (y * VRAM_WIDTH*4) + x/4;
+    int index = (y * VRAM_WIDTH) + x/4;
     // get only the wanted texel
     uint8_t texel = (this->vram[index] >> (x % 4) * 4) & 0xF; 
     // TODO: CLUT
@@ -30,27 +38,8 @@ uint16_t Vram::get_4bit_texel(const uint16_t& x, const uint16_t& y)
     return texel;
 }
     
-void Vram::store_16bit_texel(const uint16_t& x, const uint16_t& y, const uint16_t& data)
+void Vram::store(const uint16_t& x, const uint16_t& y, const uint16_t& data)
 {
-    // as 16bit -> one pixel in 16bit store
 	int index = (y * VRAM_WIDTH) + x;
     this->vram[index] = data;
-}
-
-void Vram::store_8bit_texels(const uint16_t& x, const uint16_t& y, const uint16_t& data)
-{
-    // as 8bit -> two pixels in 16bit store
-	int index = (y * VRAM_WIDTH*2) + x/2;
-	this->vram[index] = (uint8_t)data;
-	this->vram[index + 1] = (uint8_t)(data >> 8);
-}
-
-void Vram::store_4bit_texels(const uint16_t& x, const uint16_t& y, const uint16_t& data)
-{
-    // as 4 bit -> four pixels in 16bit store
-	int index = (y * VRAM_WIDTH*4) + x/4;
-	this->vram[index] = (uint8_t)data & 0xf;
-	this->vram[index + 1] = (uint8_t)(data >> 4) & 0xf;
-	this->vram[index + 2] = (uint8_t)(data >> 8) & 0xf;
-	this->vram[index + 3] = (uint8_t)(data >> 12) & 0xf;
 }

@@ -182,27 +182,12 @@ void Gpu::gp0(const uint32_t& value)
                 uint16_t x = this->page_base_x*64  + this->image_load_vram_target_x;  
                 uint16_t y = this->page_base_y*256 + this->image_load_vram_target_y;
 
-                // copy pixel data to VRAM
                 // TODO: apply mask settings 
-                switch (this->texture_depth) // TODO FIXME: is texture depth the right value to query here?
-                {
-                    case TextureDepth::T15Bit:
-                        this->vram.store_16bit_texel(x, y, (uint16_t)(value >> 16));
-                        this->vram.store_16bit_texel(x + 1, y, (uint16_t)(value & 0xffff));
-                        break;
-                    case TextureDepth::T8Bit:
-                        this->vram.store_8bit_texels(x, y, (uint16_t)(value >> 16));
-                        this->vram.store_8bit_texels(x + 1, y, (uint16_t)(value & 0xffff));
-                        break;
-                    case TextureDepth::T4Bit:
-                        this->vram.store_4bit_texels(x, y, (uint16_t)(value >> 16));
-                        this->vram.store_4bit_texels(x + 1, y, (uint16_t)(value & 0xffff));
-                        break;
-                    default:
-                        DEBUG("ERROR:Invalid_texture_depth");
-                        throw std::exception();
-                        break;
-                }
+
+                // copy pixel data to VRAM
+                // TODO: verify order
+                this->vram.store(x, y, (uint16_t)(value >> 16));
+                this->vram.store(x + 1, y, (uint16_t)(value & 0xffff));
 
                 // move on to next pixel in next iteration
                 // TODO: does the data go line by line or col by col?
@@ -306,8 +291,38 @@ void Gpu::gp0_quad_mono_opaque(const uint32_t& value)
 // GP0(0x2C): Textured Opaque Quadrilateral
 void Gpu::gp0_quad_texture_blend_opaque(const uint32_t& value)
 {
-    // TODO: sony font will be rendered here
-    DEBUG("STUB:gp0_draw_quad_texture_blending");
+    // TODO: sony logo will be drawn here
+
+    // first param: color
+    auto color = color_from_gp0(this->current_command.command[0]);
+    
+    Position positions[4] = {
+        pos_from_gp0(this->current_command.command[1]),
+        pos_from_gp0(this->current_command.command[3]),
+        pos_from_gp0(this->current_command.command[5]),
+        pos_from_gp0(this->current_command.command[7])
+    };
+
+    // third param: CLUT+texcoord1 CLUTYYXX
+    uint16_t CLUT      = this->current_command.command[4] && 0b11110000;
+    uint8_t texcoord_x = (uint8_t)(this->current_command.command[4] & 0b00000011);
+    uint8_t texcoord_y = (uint8_t)(this->current_command.command[4] & 0b00001100);
+
+    // fifth param: texcoord2+texpage PageYYXX
+    uint16_t Page       = this->current_command.command[4] && 0b11110000;
+    uint8_t texcoord2_x = (uint8_t)(this->current_command.command[4] & 0b00000011);
+    uint8_t texcoord2_y = (uint8_t)(this->current_command.command[4] & 0b00001100);
+ 
+    // seventh param: texcoord3 0000YYXX
+    uint8_t texcoord3_x = (uint8_t)(this->current_command.command[6] & 0b00000011);
+    uint8_t texcoord3_y = (uint8_t)(this->current_command.command[6] & 0b00001100);
+
+    // nineth param: texcoord4 0000YYXX
+    uint8_t texcoord4_x = (uint8_t)(this->current_command.command[8] & 0b00000011);
+    uint8_t texcoord4_y = (uint8_t)(this->current_command.command[8] & 0b00001100);
+
+    // TODO: push to renderer
+    DEBUG("STUB:draw_quad_texture_blend_opaque")
 }
 
 // GP0(0x30): Shaded Opaque Triangle
